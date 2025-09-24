@@ -4,20 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Travely – Internet Troubleshooter</title>
-
-<!-- Local CSS -->
 <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <h1>Travely – Internet Troubleshooter</h1>
   <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
 </div>
 
-<!-- MAIN CONTAINER -->
 <div class="container">
 
   <!-- CENTER PANEL -->
@@ -42,13 +37,17 @@
   <div class="right-panel">
     <img id="equipmentImage" src="images/default.png" alt="Equipment">
     <div class="caption" id="equipmentCaption">Equipment image will appear here.</div>
+
+    <div class="model-buttons">
+      <button onclick="showPreviousModel()">Previous Model</button>
+      <button onclick="showNextModel()">Next Model</button>
+    </div>
+
     <div id="lightsTableContainer" class="lights-table-container"></div>
   </div>
 
 </div>
 
-<!-- Local JS -->
 <script src="scripts.js"></script>
-
 </body>
 </html>
