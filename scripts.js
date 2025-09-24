@@ -168,6 +168,7 @@ function updateImage(tech){
       const img = document.createElement("img");
       img.src = imgData.src;
       img.alt = modelData.model;
+      img.onclick = () => openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
 
       const caption = document.createElement("div");
       caption.className = "caption";
@@ -183,6 +184,7 @@ function updateImage(tech){
 
     const img = document.createElement("img");
     img.src = "images/default.png";
+    img.onclick = () => openLightbox("images/default.png", "Equipment image will appear here.");
 
     const caption = document.createElement("div");
     caption.className="caption";
@@ -230,4 +232,19 @@ function showPreviousModel(){
   if(!selectedTech || !techInfo[selectedTech]) return;
   currentModelIndex = (currentModelIndex -1 + techInfo[selectedTech].length) % techInfo[selectedTech].length;
   updateImage(selectedTech);
+}
+
+// Lightbox
+function openLightbox(src, caption){
+  const lb = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lightbox-img");
+  const lbCaption = document.getElementById("lightbox-caption");
+
+  lb.style.display = "block";
+  lbImg.src = src;
+  lbCaption.textContent = caption;
+}
+
+function closeLightbox(){
+  document.getElementById("lightbox").style.display = "none";
 }
