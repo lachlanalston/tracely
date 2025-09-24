@@ -13,7 +13,6 @@ body {
   font-family: system-ui, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
-  transition: background 0.3s, color 0.3s;
 }
 
 .header {
@@ -33,7 +32,6 @@ body {
   color: var(--accent-color);
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s;
 }
 .dark-toggle:hover { background: var(--accent-color); color:white; }
 
@@ -66,8 +64,8 @@ body {
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
   font-weight: 600;
+  transition: all 0.2s;
 }
 .card:hover { transform: translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.3);}
 .card.selected { background: var(--accent-color); color:white; }
@@ -87,7 +85,6 @@ body {
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
   border:none;
 }
 .next-step:hover { background: var(--accent-hover); }
@@ -104,9 +101,7 @@ body {
   max-width: 100%;
   border-radius: 12px;
   border:1px solid var(--caption-color);
-  transition: transform 0.3s;
 }
-.right-panel img:hover { transform: scale(1.05);}
 .caption { color: var(--caption-color); font-size:0.95rem; margin-top:10px; text-align:center; }
 
 .lights-table-container {
@@ -114,13 +109,11 @@ body {
   width: 100%;
   overflow-x: auto;
 }
-
 .lights-table-container table {
   width: 100%;
   border-collapse: collapse;
   color: var(--text-color);
 }
-
 .lights-table-container th, 
 .lights-table-container td {
   border: 1px solid var(--caption-color);
@@ -128,11 +121,28 @@ body {
   text-align: center;
   font-size: 0.9rem;
 }
-
 .lights-table-container th {
   background-color: var(--panel-bg);
   font-weight: 600;
 }
+
+.model-buttons {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+.model-buttons button {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-color);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.model-buttons button:hover { background: var(--accent-hover); }
 
 #nextStepsOutput {
   margin-top: 15px;
