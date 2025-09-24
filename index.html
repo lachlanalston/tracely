@@ -88,7 +88,7 @@ body {
 }
 .checkbox-group input[type='checkbox'] { margin-right: 10px; width:18px; height:18px; accent-color: var(--accent-color); }
 
-.next-step, #copyStepsBtn {
+.next-step {
   background: var(--accent-color);
   color: white;
   padding: 14px;
@@ -98,7 +98,7 @@ body {
   transition: background 0.2s;
   border:none;
 }
-.next-step:hover, #copyStepsBtn:hover { background: var(--accent-hover); }
+.next-step:hover { background: var(--accent-hover); }
 
 .right-panel {
   background: var(--panel-bg);
@@ -119,6 +119,7 @@ body {
 
 #nextStepsOutput {
   margin-top: 15px;
+  position: relative;
 }
 
 @media (max-width:1000px){
@@ -150,7 +151,6 @@ body {
       <div class="checkbox-group" id="checkboxes"></div>
       <button class="next-step" onclick="showNextStep()">Show Next Step</button>
       <div id="nextStepsOutput"></div>
-      <button id="copyStepsBtn" onclick="copyNextSteps()">Copy Steps</button>
     </div>
   </div>
 
@@ -242,7 +242,7 @@ function populateSteps(issue){
   }
 }
 
-// Show next step with dynamic guidance
+// Show next step with dynamic guidance + copy button
 function showNextStep(){
   const container = document.getElementById("nextStepsOutput");
   if(!selectedIssue) return;
@@ -255,7 +255,11 @@ function showNextStep(){
   let firstIncomplete = true;
 
   container.innerHTML = `
-    <div style="padding:16px; border-radius:16px; background:var(--panel-bg); box-shadow:0 6px 15px rgba(0,0,0,0.3);">
+    <div style="position: relative; padding:16px; border-radius:16px; background:var(--panel-bg); box-shadow:0 6px 15px rgba(0,0,0,0.3);">
+      <button id="copySmallBtn" onclick="copyNextSteps()" 
+              style="position:absolute; top:10px; right:10px; background:var(--accent-color); border:none; color:white; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:0.9rem;">
+        Copy
+      </button>
       <h3 style="margin-top:0; margin-bottom:10px;">Recommended Next Steps</h3>
       <ol style="padding-left:20px; margin:0;" id="stepList">
         ${allSteps.map((step, i) => {
@@ -278,7 +282,9 @@ function copyNextSteps(){
   if(!steps.length) return;
   const text = Array.from(steps).map(li=>li.textContent).join("\n");
   navigator.clipboard.writeText(text).then(() => {
-    alert("Next steps copied to clipboard!");
+    const btn = document.getElementById("copySmallBtn");
+    btn.textContent = "Copied!";
+    setTimeout(()=>{ btn.textContent = "Copy"; }, 1500);
   });
 }
 
