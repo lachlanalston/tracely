@@ -35,7 +35,13 @@ const stepsData = {
 // HFC only images/models for now
 const techInfo = {
   "HFC": [
-    { img: "images/Older HFC NTD - Arris CM8200.png", model: "Arris CM8200", caption: "Check coax and power lights" }
+    { 
+      model: "Arris CM8200",
+      images: [
+        { src: "images/Older HFC NTD - Arris CM8200_Front.png", caption: "Front view – check lights" },
+        { src: "images/Older HFC NTD - Arris CM8200_Back.jpg", caption: "Back view – check ports" }
+      ]
+    }
   ]
 };
 
@@ -147,54 +153,77 @@ function copyNextSteps(){
   });
 }
 
-// Update image + caption
+// Update images + caption
 function updateImage(tech){
-  const img = document.getElementById("equipmentImage");
-  const caption = document.getElementById("equipmentCaption");
+  const container = document.getElementById("equipmentImagesContainer");
+  container.innerHTML="";
 
   if(techInfo[tech] && techInfo[tech].length>0){
     const modelData = techInfo[tech][currentModelIndex];
-    img.src = modelData.img;
-    caption.innerHTML = `<strong>${modelData.model}</strong> – ${modelData.caption}`;
+
+    modelData.images.forEach(imgData=>{
+      const imgWrapper = document.createElement("div");
+      imgWrapper.style.display = "flex";
+      imgWrapper.style.flexDirection = "column";
+      imgWrapper.style.alignItems = "center";
+
+      const img = document.createElement("img");
+      img.src = imgData.src;
+      img.alt = modelData.model;
+
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.innerHTML = `<strong>${modelData.model}</strong> – ${imgData.caption}`;
+
+      imgWrapper.appendChild(img);
+      imgWrapper.appendChild(caption);
+      container.appendChild(imgWrapper);
+    });
   } else {
-    img.src="images/default.png";
-    caption.textContent="Equipment image will appear here.";
+    const img = document.createElement("img");
+    img.src = "images/default.png";
+    const caption = document.createElement("div");
+    caption.className="caption";
+    caption.textContent = "Equipment image will appear here.";
+    container.appendChild(img);
+    container.appendChild(caption);
   }
 
   updateLightsTable(tech);
 }
 
-// Previous / Next model
+// Lights table
+function updateLightsTable(tech){
+  const container = document.getElementById("lightsTableContainer");
+  container.innerHTML="";
+  if(!techInfo[tech]) return;
+
+  const model = techInfo[tech][currentModelIndex].model;
+  const tableData = (lightsData[tech] && lightsData[tech][model]) || [];
+
+  if(tableData.length){
+    const table = document.createElement("table");
+    tableData.forEach((row,i)=>{
+      const tr = document.createElement("tr");
+      row.forEach(cell=>{
+        const td = i===0 ? document.createElement("th") : document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+    container.appendChild(table);
+  }
+}
+
+// Model navigation
 function showNextModel(){
   if(!selectedTech || !techInfo[selectedTech]) return;
-  currentModelIndex = (currentModelIndex + 1) % techInfo[selectedTech].length;
+  currentModelIndex = (currentModelIndex +1) % techInfo[selectedTech].length;
   updateImage(selectedTech);
 }
 function showPreviousModel(){
   if(!selectedTech || !techInfo[selectedTech]) return;
-  currentModelIndex = (currentModelIndex - 1 + techInfo[selectedTech].length) % techInfo[selectedTech].length;
+  currentModelIndex = (currentModelIndex -1 + techInfo[selectedTech].length) % techInfo[selectedTech].length;
   updateImage(selectedTech);
-}
-
-// Lights table for HFC only
-function updateLightsTable(tech){
-  const container = document.getElementById("lightsTableContainer");
-  container.innerHTML="";
-  if(tech!=="HFC") return;
-
-  const modelName = techInfo[tech][currentModelIndex].model;
-  const data = lightsData[tech] ? lightsData[tech][modelName] : null;
-  if(!data) return;
-
-  const table = document.createElement("table");
-  data.forEach((row,i)=>{
-    const tr = document.createElement("tr");
-    row.forEach(cell=>{
-      const td = i===0 ? document.createElement("th") : document.createElement("td");
-      td.textContent = cell;
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
-  container.appendChild(table);
 }
