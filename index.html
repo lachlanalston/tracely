@@ -1,216 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travely – Internet Troubleshooter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --panel-bg: #1e293b;
-      --text-color: #f1f5f9;
-      --accent-color: #3b82f6;
-      --accent-hover: #2563eb;
-      --card-bg: #1e40af;
-      --caption-color: #cbd5e1;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travely – Internet Troubleshooter</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-color: #0f172a;
+  --panel-bg: #1e293b;
+  --text-color: #f1f5f9;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --card-bg: #1e40af;
+  --caption-color: #cbd5e1;
+}
 
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--bg-color);
-      color: var(--text-color);
-      transition: background 0.3s, color 0.3s;
-    }
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 40px;
-      background: var(--panel-bg);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-    .dark-toggle {
-      padding: 8px 16px;
-      border-radius: 12px;
-      border: 2px solid var(--accent-color);
-      background: transparent;
-      color: var(--accent-color);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .dark-toggle:hover {
-      background: var(--accent-color);
-      color: white;
-    }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: var(--panel-bg);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.header h1 { margin:0; font-size:1.8rem; }
+.dark-toggle {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--accent-color);
+  background: transparent;
+  color: var(--accent-color);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.dark-toggle:hover { background: var(--accent-color); color:white; }
 
-    .container {
-      display: grid;
-      grid-template-columns: 220px 1fr 250px;
-      gap: 20px;
-      padding: 20px 40px;
-      min-height: calc(100vh - 80px);
-    }
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px 40px;
+  min-height: calc(100vh - 80px);
+}
 
-    /* LEFT PANEL */
-    .panel {
-      background: var(--panel-bg);
-      padding: 20px;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .panel select, .panel label {
-      font-size: 1rem;
-    }
+.center-panel {
+  background: var(--panel-bg);
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-    /* CENTER PANEL */
-    .main {
-      background: var(--panel-bg);
-      padding: 20px;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .checkbox-group label {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-      cursor: pointer;
-    }
-    .checkbox-group input[type='checkbox'] {
-      margin-right: 10px;
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent-color);
-    }
-    .card {
-      background: var(--card-bg);
-      padding: 12px;
-      border-radius: 12px;
-      transition: all 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-    }
-    .next-step {
-      background: var(--accent-color);
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .next-step:hover {
-      background: var(--accent-hover);
-    }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
 
-    /* RIGHT PANEL */
-    .image-panel {
-      background: var(--panel-bg);
-      border-radius: 16px;
-      padding: 15px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .image-panel img {
-      max-width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--caption-color);
-      transition: transform 0.3s;
-    }
-    .image-panel img:hover {
-      transform: scale(1.05);
-    }
-    .caption {
-      color: var(--caption-color);
-      font-size: 0.9rem;
-    }
+.card {
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.card:hover { transform: translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.3);}
+.card.selected { background: var(--accent-color); color:white; }
 
-    /* Responsive */
-    @media (max-width: 1000px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-      .image-panel {
-        order: -1;
-      }
-    }
-  </style>
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.checkbox-group input[type='checkbox'] { margin-right: 10px; width:18px; height:18px; accent-color: var(--accent-color); }
+
+.next-step {
+  background: var(--accent-color);
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.next-step:hover { background: var(--accent-hover); }
+
+.right-panel {
+  background: var(--panel-bg);
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.right-panel img {
+  max-width: 100%;
+  border-radius: 12px;
+  border:1px solid var(--caption-color);
+  transition: transform 0.3s;
+}
+.right-panel img:hover { transform: scale(1.05);}
+.caption { color: var(--caption-color); font-size:0.9rem; margin-top:8px;}
+
+@media (max-width:1000px){
+  .container{grid-template-columns:1fr; }
+  .right-panel{order:-1;}
+}
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1>Travely – Internet Troubleshooter</h1>
-    <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
-  </div>
 
-  <div class="container">
-    <!-- LEFT PANEL -->
-    <div class="panel">
-      <label for="techType">Technology Type:</label>
-      <select id="techType">
-        <option value="">-- Select --</option>
-        <option value="FTTP">FTTP</option>
-        <option value="HFC">HFC</option>
-        <option value="FTTN">FTTN/FTTB</option>
-        <option value="LTE">LTE/4G</option>
-        <option value="ADSL">ADSL/VDSL</option>
-        <option value="SAT">Satellite</option>
-      </select>
+<div class="header">
+  <h1>Travely – Internet Troubleshooter</h1>
+  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
+</div>
 
-      <label for="issueType">Issue Type:</label>
-      <select id="issueType">
-        <option value="">-- Select --</option>
-        <option value="noInternet">No Internet</option>
-        <option value="packetLoss">Packet Loss</option>
-        <option value="slow">Slow Internet</option>
-        <option value="noPower">No Power</option>
-      </select>
+<div class="container">
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+    <div>
+      <h2>Technology Type</h2>
+      <div id="techTypeGrid" class="card-grid"></div>
     </div>
-
-    <!-- CENTER PANEL -->
-    <div class="main">
-      <div id="stepsContainer" class="card">
-        <p>Select a technology type and issue to display steps.</p>
-      </div>
+    <div>
+      <h2>Issue Type</h2>
+      <div id="issueTypeGrid" class="card-grid"></div>
+    </div>
+    <div id="stepsContainer">
+      <h2>Troubleshooting Steps</h2>
+      <div class="checkbox-group" id="checkboxes"></div>
       <button class="next-step" onclick="showNextStep()">Get Next Step</button>
     </div>
-
-    <!-- RIGHT PANEL -->
-    <div class="image-panel">
-      <img id="equipmentImage" src="images/default.png" alt="Equipment">
-      <div class="caption" id="equipmentCaption">Equipment image will appear here.</div>
-    </div>
   </div>
 
-  <script>
-    // Dark mode toggle
-    let darkMode = true;
-    function toggleDarkMode() {
-      darkMode = !darkMode;
-      const root = document.documentElement;
-      if(darkMode){
-        root.style.setProperty('--bg-color','#0f172a');
-        root.style.setProperty('--panel-bg','#1e293b');
-        root.style.setProperty('--text-color','#f1f5f9');
-        root.style.setProperty('--accent-color','#3b82f6');
-        root.style.setProperty('--accent-hover','#2563eb');
-        root.style.setProperty('--card-bg','#1e40af');
-        root.style.setProperty('--caption-color','#cbd5e1');
-      } else {
-        root.style.setProperty('--bg-color','#f0f2f5');
-        root.style.setProperty('--panel-bg','#ffffff');
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <img id="equipmentImage" src="images/default.png" alt="Equipment">
+    <div class="caption" id="equipmentCaption">Equipment image will appear here.</div>
+  </div>
+</div>
+
+<script>
+// Dark mode toggle
+let darkMode = true;
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  const root = document.documentElement;
+  if(darkMode){
+    root.style.setProperty('--bg-color','#0f172a');
+    root.style.setProperty('--panel-bg','#1e293b');
+    root.style.setProperty('--text-color','#f1f5f9');
+    root.style.setProperty('--accent-color','#3b82f6');
+    root.style.setProperty('--accent-hover','#2563eb');
+    root.style.setProperty('--card-bg','#1e40af');
+    root.style.setProperty('--caption-color','#cbd5e1');
+  } else {
+    root.style.setProperty('--bg-color','#f0f2f5');
+    root.style.setProperty('--panel-bg','#ffffff');
+    root.style.setProperty('--text-color','#1e293b');
+    root.style.setProperty('--accent-color','#3b82f6');
+    root.style.setProperty('--accent-hover','#2563eb');
+    root.style.setProperty('--card-bg','#e0e7ff');
+    root.style.setProperty('--caption-color','#475569');
+  }
+}
+
+// Example data
+const techTypes = ["FTTP","HFC","FTTN/FTTB","LTE/4G","ADSL/VDSL","Satellite"];
+const issueTypes = ["No Internet","Packet Loss","Slow Internet","No Power"];
+const stepsData = {
+  "No Internet":["Check NTD Lights","Restart NTD","Kick Connection","Loopback Test","Port Reset","Stability Profile"],
+  "Packet Loss":["Check Cabling","Restart Router","Ping Test","Check for Interference"],
+  "Slow Internet":["Speed Test","Restart Modem","Check Cabling","Check Background Traffic"],
+  "No Power":["Check Power Supply","Reset NTD","Check Outlet"]
+};
+
+// Populate tech type cards
+const techContainer = document.getElementById("techTypeGrid");
+let selectedTech = "";
+techTypes.forEach(t=>{
+  const card = document.createElement("div");
+  card.className="card";
+  card.textContent = t;
+  card.onclick=()=>{
+    selectedTech=t;
+    document.querySelectorAll("#techTypeGrid .card").forEach(c=>c.classList.remove("selected"));
+    card.classList.add("selected");
+    updateImage(t);
+  };
+  techContainer.appendChild(card);
+});
+
+// Populate issue type cards
+const issueContainer = document.getElementById("issueTypeGrid");
+let selectedIssue = "";
+issueTypes.forEach(i=>{
+  const card = document.createElement("div");
+  card.className="card";
+  card.textContent = i;
+  card.onclick=()=>{
+    selectedIssue=i;
+    document.querySelectorAll("#issueTypeGrid .card").forEach(c=>c.classList.remove("selected"));
+    card.classList.add("selected");
+    populateSteps(i);
+  };
+  issueContainer.appendChild(card);
+});
+
+// Populate checkboxes
+function populateSteps(issue){
+  const container = document.getElementById("checkboxes");
+  container.innerHTML="";
+  if(stepsData[issue]){
+    stepsData[issue].forEach(step=>{
+      const label = document.createElement("label");
+      label.innerHTML=`<input type="checkbox"> ${step}`;
+      container.appendChild(label);
+    });
+  }
+}
+
+function showNextStep(){
+  alert("Next step guidance will appear here based on selected options.");
+}
+
+// Example image update function
+function updateImage(tech){
+  const img = document.getElementById("equipmentImage");
+  const caption = document.getElementById("equipmentCaption");
+  switch(tech){
+    case "FTTP":
+      img.src="images/fttp.png";
+      caption.textContent="FTTP NTD – check PON & UNI-D ports and lights";
+      break;
+    case "HFC":
+      img.src="images/hfc.png";
+      caption.textContent="HFC Modem – check coax and power lights";
+      break;
+    case "FTTN/FTTB":
+      img.src="images/fttn.png";
+      caption.textContent="FTTN NTD – check phone line & router connections";
+      break;
+    case "LTE/4G":
+      img.src="images/lte.png";
+      caption.textContent="LTE Modem – check SIM & signal indicator lights";
+      break;
+    case "ADSL/VDSL":
+      img.src="images/adsl.png";
+      caption.textContent="ADSL Modem – check DSL lights and connections";
+      break;
+    case "Satellite":
+      img.src="images/satellite.png";
+      caption.textContent="Satellite modem – check dish and power lights";
+      break;
+    default:
+      img.src="images/default.png";
+      caption.textContent="Equipment image will appear here.";
+  }
+}
+</script>
+
+</body>
+</html>
