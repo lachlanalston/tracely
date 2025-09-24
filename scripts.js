@@ -32,6 +32,19 @@ const stepsData = {
   "No Power":["Check Power Supply","Reset NTD","Check Outlet"]
 };
 
+const lightsData = {
+  "HFC": [
+    ["Power","Downstream","Upstream","Online","Meaning"],
+    ["Off","Off","Off","Off","No power to the NBN connection box"],
+    ["On","Flashing","Flashing","Flashing","Power-on self test"],
+    ["On","Flashing","Off","Off","Downstream search"],
+    ["On","On","Flashing","Off","Downstream found, upstream search"],
+    ["On","On","On","Flashing","Downstream and upstream found - retrieving setup information from NBN"],
+    ["On","On","On","On","Ready for service"]
+  ]
+  // Add other tech types here later
+};
+
 // Populate tech type cards
 const techContainer = document.getElementById("techTypeGrid");
 let selectedTech = "";
@@ -124,7 +137,7 @@ function copyNextSteps(){
   });
 }
 
-// Update equipment image
+// Update equipment image + lights table
 function updateImage(tech){
   const img = document.getElementById("equipmentImage");
   const caption = document.getElementById("equipmentCaption");
@@ -137,4 +150,25 @@ function updateImage(tech){
     case "Satellite": img.src="images/satellite.png"; caption.textContent="Satellite modem – check dish and power lights"; break;
     default: img.src="images/default.png"; caption.textContent="Equipment image will appear here.";
   }
+  updateLightsTable(tech);
+}
+
+// Update lights table dynamically
+function updateLightsTable(tech) {
+  const container = document.getElementById("lightsTableContainer");
+  container.innerHTML = "";
+  const data = lightsData[tech];
+  if(!data) return;
+
+  const table = document.createElement("table");
+  data.forEach((row, i) => {
+    const tr = document.createElement("tr");
+    row.forEach(cell => {
+      const td = i === 0 ? document.createElement("th") : document.createElement("td");
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+  container.appendChild(table);
 }
