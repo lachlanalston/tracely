@@ -35,18 +35,21 @@
 
   <!-- RIGHT PANEL -->
   <div class="right-panel">
-
-    <!-- Equipment images side by side -->
     <div id="equipmentImagesContainer" class="equipment-images-container"></div>
-
     <div class="model-buttons">
       <button onclick="showPreviousModel()">Previous Model</button>
       <button onclick="showNextModel()">Next Model</button>
     </div>
-
     <div id="lightsTableContainer" class="lights-table-container"></div>
   </div>
 
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox">
+  <span class="lightbox-close" onclick="closeLightbox()">×</span>
+  <img class="lightbox-content" id="lightbox-img">
+  <div id="lightbox-caption" class="lightbox-caption"></div>
 </div>
 
 <script src="scripts.js"></script>
