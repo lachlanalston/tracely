@@ -1,4 +1,4 @@
-// Dark mode toggle
+// DARK MODE
 let darkMode = true;
 function toggleDarkMode() {
   darkMode = !darkMode;
@@ -22,7 +22,7 @@ function toggleDarkMode() {
   }
 }
 
-// Example data
+// DATA
 const techTypes = ["FTTP","HFC","FTTN/FTTB","LTE/4G","ADSL/VDSL","Satellite"];
 const issueTypes = ["No Internet","Packet Loss","Slow Internet","No Power"];
 const stepsData = {
@@ -32,28 +32,40 @@ const stepsData = {
   "No Power":["Check Power Supply","Reset NTD","Check Outlet"]
 };
 
-const lightsData = {
+// HFC only images/models for now
+const techInfo = {
   "HFC": [
-    ["Power","Downstream","Upstream","Online","Meaning"],
-    ["Off","Off","Off","Off","No power to the NBN connection box"],
-    ["On","Flashing","Flashing","Flashing","Power-on self test"],
-    ["On","Flashing","Off","Off","Downstream search"],
-    ["On","On","Flashing","Off","Downstream found, upstream search"],
-    ["On","On","On","Flashing","Downstream and upstream found - retrieving setup information from NBN"],
-    ["On","On","On","On","Ready for service"]
+    { img: "images/Older HFC NTD - Arris CM8200.png", model: "Arris CM8200", caption: "Check coax and power lights" }
   ]
-  // Add other tech types here later
 };
 
-// Populate tech type cards
-const techContainer = document.getElementById("techTypeGrid");
+const lightsData = {
+  "HFC": {
+    "Arris CM8200": [
+      ["Power","Downstream","Upstream","Online","Meaning"],
+      ["Off","Off","Off","Off","No power to the NBN connection box"],
+      ["On","Flashing","Flashing","Flashing","Power-on self test"],
+      ["On","Flashing","Off","Off","Downstream search"],
+      ["On","On","Flashing","Off","Downstream found, upstream search"],
+      ["On","On","On","Flashing","Downstream and upstream found - retrieving setup information from NBN"],
+      ["On","On","On","On","Ready for service"]
+    ]
+  }
+};
+
 let selectedTech = "";
+let selectedIssue = "";
+let currentModelIndex = 0;
+
+// Populate tech cards
+const techContainer = document.getElementById("techTypeGrid");
 techTypes.forEach(t=>{
   const card = document.createElement("div");
   card.className="card";
   card.textContent = t;
   card.onclick=()=>{
     selectedTech=t;
+    currentModelIndex=0;
     document.querySelectorAll("#techTypeGrid .card").forEach(c=>c.classList.remove("selected"));
     card.classList.add("selected");
     updateImage(t);
@@ -61,9 +73,8 @@ techTypes.forEach(t=>{
   techContainer.appendChild(card);
 });
 
-// Populate issue type cards
+// Populate issue cards
 const issueContainer = document.getElementById("issueTypeGrid");
-let selectedIssue = "";
 issueTypes.forEach(i=>{
   const card = document.createElement("div");
   card.className="card";
@@ -91,7 +102,7 @@ function populateSteps(issue){
   }
 }
 
-// Show next step with dynamic guidance + copy button
+// Next step + copy button
 function showNextStep(){
   const container = document.getElementById("nextStepsOutput");
   if(!selectedIssue) return;
@@ -125,7 +136,6 @@ function showNextStep(){
   `;
 }
 
-// Copy steps
 function copyNextSteps(){
   const steps = document.querySelectorAll("#stepList li");
   if(!steps.length) return;
@@ -137,34 +147,50 @@ function copyNextSteps(){
   });
 }
 
-// Update equipment image + lights table
+// Update image + caption
 function updateImage(tech){
   const img = document.getElementById("equipmentImage");
   const caption = document.getElementById("equipmentCaption");
-  switch(tech){
-    case "FTTP": img.src="images/fttp.png"; caption.textContent="FTTP NTD – check PON & UNI-D ports and lights"; break;
-    case "HFC": img.src="images/hfc.png"; caption.textContent="HFC Modem – check coax and power lights"; break;
-    case "FTTN/FTTB": img.src="images/fttn.png"; caption.textContent="FTTN NTD – check phone line & router connections"; break;
-    case "LTE/4G": img.src="images/lte.png"; caption.textContent="LTE Modem – check SIM & signal indicator lights"; break;
-    case "ADSL/VDSL": img.src="images/adsl.png"; caption.textContent="ADSL Modem – check DSL lights and connections"; break;
-    case "Satellite": img.src="images/satellite.png"; caption.textContent="Satellite modem – check dish and power lights"; break;
-    default: img.src="images/default.png"; caption.textContent="Equipment image will appear here.";
+
+  if(techInfo[tech] && techInfo[tech].length>0){
+    const modelData = techInfo[tech][currentModelIndex];
+    img.src = modelData.img;
+    caption.innerHTML = `<strong>${modelData.model}</strong> – ${modelData.caption}`;
+  } else {
+    img.src="images/default.png";
+    caption.textContent="Equipment image will appear here.";
   }
+
   updateLightsTable(tech);
 }
 
-// Update lights table dynamically
-function updateLightsTable(tech) {
+// Previous / Next model
+function showNextModel(){
+  if(!selectedTech || !techInfo[selectedTech]) return;
+  currentModelIndex = (currentModelIndex + 1) % techInfo[selectedTech].length;
+  updateImage(selectedTech);
+}
+function showPreviousModel(){
+  if(!selectedTech || !techInfo[selectedTech]) return;
+  currentModelIndex = (currentModelIndex - 1 + techInfo[selectedTech].length) % techInfo[selectedTech].length;
+  updateImage(selectedTech);
+}
+
+// Lights table for HFC only
+function updateLightsTable(tech){
   const container = document.getElementById("lightsTableContainer");
-  container.innerHTML = "";
-  const data = lightsData[tech];
+  container.innerHTML="";
+  if(tech!=="HFC") return;
+
+  const modelName = techInfo[tech][currentModelIndex].model;
+  const data = lightsData[tech] ? lightsData[tech][modelName] : null;
   if(!data) return;
 
   const table = document.createElement("table");
-  data.forEach((row, i) => {
+  data.forEach((row,i)=>{
     const tr = document.createElement("tr");
-    row.forEach(cell => {
-      const td = i === 0 ? document.createElement("th") : document.createElement("td");
+    row.forEach(cell=>{
+      const td = i===0 ? document.createElement("th") : document.createElement("td");
       td.textContent = cell;
       tr.appendChild(td);
     });
