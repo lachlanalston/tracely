@@ -168,7 +168,11 @@ function updateImage(tech){
       const img = document.createElement("img");
       img.src = imgData.src;
       img.alt = modelData.model;
-      img.onclick = () => openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
+
+      // FIXED: reliable click for lightbox
+      img.addEventListener("click", () => {
+        openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
+      });
 
       const caption = document.createElement("div");
       caption.className = "caption";
@@ -184,7 +188,9 @@ function updateImage(tech){
 
     const img = document.createElement("img");
     img.src = "images/default.png";
-    img.onclick = () => openLightbox("images/default.png", "Equipment image will appear here.");
+    img.addEventListener("click", () => {
+      openLightbox("images/default.png", "Equipment image will appear here.");
+    });
 
     const caption = document.createElement("div");
     caption.className="caption";
@@ -234,7 +240,7 @@ function showPreviousModel(){
   updateImage(selectedTech);
 }
 
-// Lightbox
+// Lightbox functions
 function openLightbox(src, caption){
   const lb = document.getElementById("lightbox");
   const lbImg = document.getElementById("lightbox-img");
