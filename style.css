@@ -51,7 +51,7 @@ button{ cursor:pointer; }
 }
 
 .right-panel{
-  width:65%;                  /* keeps right panel same size */
+  width:65%;
   display:flex;
   flex-direction:column;
   gap:15px;
@@ -84,8 +84,9 @@ button{ cursor:pointer; }
 
 /* Overview image */
 .overview-image-container img{
-  width:100%;          /* full width of right panel */
-  height:auto;         /* maintain aspect ratio */
+  width:80%;          /* smaller percentage so it doesn't fill whole panel */
+  max-width:400px;    /* prevent huge image on large screens */
+  height:auto;
   border-radius:12px;
   border:1px solid var(--caption-color);
   cursor:pointer;
@@ -95,18 +96,19 @@ button{ cursor:pointer; }
 .equipment-images-container{
   display:flex;
   justify-content:space-between;
-  width:100%;          /* full width of right panel */
-  gap:4%;              /* small gap between front/back */
+  width:100%;
+  gap:4%;
 }
 
 .img-wrapper{
-  width:48%;           /* each image takes ~48% */
+  width:48%;          /* each image ~half of container width */
+  max-width:220px;    /* limit max size */
   text-align:center;
 }
 
 .img-wrapper img{
-  width:100%;          /* fill wrapper */
-  height:auto;         /* maintain aspect ratio */
+  width:100%;
+  height:auto;
   border-radius:12px;
   cursor:pointer;
 }
