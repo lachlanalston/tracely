@@ -54,6 +54,7 @@ button{ cursor:pointer; }
   width:65%;
 }
 
+/* Card grid */
 .card-grid{
   display:flex;
   flex-wrap:wrap;
@@ -71,35 +72,57 @@ button{ cursor:pointer; }
 
 .card.selected{ border:2px solid var(--accent-color); }
 
+/* Checkboxes */
 .checkboxes label{
   display:block;
   margin:5px 0;
 }
 
+/* Overview image */
 .overview-image-container img{
-  max-width:100%;
+  width:100%;
+  max-height:200px;
+  object-fit:contain;  /* keeps proportions */
   border-radius:12px;
   border:1px solid var(--caption-color);
   cursor:pointer;
   margin-bottom:15px;
 }
 
+/* Equipment images side by side */
 .equipment-images-container{
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;  /* side by side */
 }
 
-.img-wrapper{ flex:1 1 48%; text-align:center; }
-.img-wrapper img{ width:100%; border-radius:12px; cursor:pointer; }
-.img-wrapper .caption{ font-size:0.9rem; color:var(--caption-color); margin-top:4px; }
+.img-wrapper{
+  flex:1 1 48%;
+  text-align:center;
+}
 
+.img-wrapper img{
+  width:100%;
+  max-height:200px;  /* uniform height */
+  object-fit:contain; /* keeps proportions */
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.img-wrapper .caption{
+  font-size:0.9rem;
+  color:var(--caption-color);
+  margin-top:4px;
+}
+
+/* Model buttons */
 .model-buttons{
   margin-top:10px;
   display:flex;
   justify-content:space-between;
 }
 
+/* Lights table */
 .lights-table-container table{
   width:100%;
   border-collapse:collapse;
@@ -112,8 +135,10 @@ button{ cursor:pointer; }
   text-align:left;
 }
 
+/* Next steps output */
 .next-steps-container{ padding:20px; }
 
+/* Lightbox */
 .lightbox{
   display:none;
   position:fixed;
