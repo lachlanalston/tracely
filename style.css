@@ -51,7 +51,11 @@ button{ cursor:pointer; }
 }
 
 .right-panel{
-  width:65%;
+  width:65%;                  /* keeps right panel same size */
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  align-items:center;
 }
 
 /* Card grid */
@@ -80,31 +84,29 @@ button{ cursor:pointer; }
 
 /* Overview image */
 .overview-image-container img{
-  width:100%;
-  max-height:200px;
-  object-fit:contain;  /* keeps proportions */
+  width:100%;          /* full width of right panel */
+  height:auto;         /* maintain aspect ratio */
   border-radius:12px;
   border:1px solid var(--caption-color);
   cursor:pointer;
-  margin-bottom:15px;
 }
 
 /* Equipment images side by side */
 .equipment-images-container{
   display:flex;
-  gap:10px;
-  flex-wrap:nowrap;  /* side by side */
+  justify-content:space-between;
+  width:100%;          /* full width of right panel */
+  gap:4%;              /* small gap between front/back */
 }
 
 .img-wrapper{
-  flex:1 1 48%;
+  width:48%;           /* each image takes ~48% */
   text-align:center;
 }
 
 .img-wrapper img{
-  width:100%;
-  max-height:200px;  /* uniform height */
-  object-fit:contain; /* keeps proportions */
+  width:100%;          /* fill wrapper */
+  height:auto;         /* maintain aspect ratio */
   border-radius:12px;
   cursor:pointer;
 }
