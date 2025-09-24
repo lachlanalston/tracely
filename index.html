@@ -8,123 +8,193 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --container-bg: #1e293b;
+      --panel-bg: #1e293b;
       --text-color: #f1f5f9;
-      --button-bg: #3b82f6;
-      --button-hover: #2563eb;
-      --step-bg: #1e40af;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --card-bg: #1e40af;
       --caption-color: #cbd5e1;
     }
 
     body {
       font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
       background: var(--bg-color);
       color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       transition: background 0.3s, color 0.3s;
     }
-    .container {
-      background: var(--container-bg);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      max-width: 650px;
-      width: 100%;
-      transition: transform 0.3s, background 0.3s;
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: var(--panel-bg);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      text-align: center;
-      color: var(--text-color);
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
     }
-    button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 14px;
-      border: none;
+    .dark-toggle {
+      padding: 8px 16px;
       border-radius: 12px;
-      background: var(--button-bg);
-      color: white;
-      font-size: 1rem;
+      border: 2px solid var(--accent-color);
+      background: transparent;
+      color: var(--accent-color);
       cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
+      font-weight: 600;
+      transition: all 0.3s;
     }
-    button:hover {
-      background: var(--button-hover);
-      transform: translateY(-2px);
+    .dark-toggle:hover {
+      background: var(--accent-color);
+      color: white;
     }
-    .checkbox-group {
-      margin-top: 15px;
+
+    .container {
+      display: grid;
+      grid-template-columns: 220px 1fr 250px;
+      gap: 20px;
+      padding: 20px 40px;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* LEFT PANEL */
+    .panel {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .panel select, .panel label {
+      font-size: 1rem;
+    }
+
+    /* CENTER PANEL */
+    .main {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
     .checkbox-group label {
       display: flex;
       align-items: center;
-      margin: 6px 0;
-      font-size: 0.95rem;
+      margin-bottom: 8px;
       cursor: pointer;
     }
     .checkbox-group input[type='checkbox'] {
       margin-right: 10px;
       width: 18px;
       height: 18px;
-      accent-color: var(--button-bg);
+      accent-color: var(--accent-color);
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+    .next-step {
+      background: var(--accent-color);
+      color: white;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s;
     }
-    .step {
-      margin-top: 20px;
+    .next-step:hover {
+      background: var(--accent-hover);
+    }
+
+    /* RIGHT PANEL */
+    .image-panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
       padding: 15px;
-      border-left: 5px solid var(--button-bg);
-      background: var(--step-bg);
-      border-radius: 8px;
-      font-weight: 500;
-      line-height: 1.4;
-      transition: all 0.3s;
-      color: var(--text-color);
-    }
-    .connection-image {
-      margin: 20px 0;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .connection-image img {
+    .image-panel img {
       max-width: 100%;
       border-radius: 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--caption-color);
       transition: transform 0.3s;
     }
-    .connection-image img:hover {
+    .image-panel img:hover {
       transform: scale(1.05);
     }
-    .connection-caption {
-      margin-top: 8px;
-      font-size: 0.9rem;
+    .caption {
       color: var(--caption-color);
-      text-align: center;
+      font-size: 0.9rem;
     }
-    .dark-toggle {
-      margin: 10px 0 20px 0;
-      background: transparent;
-      border: 2px solid var(--button-bg);
-      color: var(--button-bg);
-      font-weight: 600;
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .image-panel {
+        order: -1;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="header">
     <h1>Travely – Internet Troubleshooter</h1>
-    <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
-    <div id="issue-selection"></div>
-    <div id="connection-selection"></div>
-    <div id="connection-image" class="connection-image"></div>
-    <div id="troubleshoot-steps"></div>
-    <div id="next-action"></div>
+    <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
+  </div>
+
+  <div class="container">
+    <!-- LEFT PANEL -->
+    <div class="panel">
+      <label for="techType">Technology Type:</label>
+      <select id="techType">
+        <option value="">-- Select --</option>
+        <option value="FTTP">FTTP</option>
+        <option value="HFC">HFC</option>
+        <option value="FTTN">FTTN/FTTB</option>
+        <option value="LTE">LTE/4G</option>
+        <option value="ADSL">ADSL/VDSL</option>
+        <option value="SAT">Satellite</option>
+      </select>
+
+      <label for="issueType">Issue Type:</label>
+      <select id="issueType">
+        <option value="">-- Select --</option>
+        <option value="noInternet">No Internet</option>
+        <option value="packetLoss">Packet Loss</option>
+        <option value="slow">Slow Internet</option>
+        <option value="noPower">No Power</option>
+      </select>
+    </div>
+
+    <!-- CENTER PANEL -->
+    <div class="main">
+      <div id="stepsContainer" class="card">
+        <p>Select a technology type and issue to display steps.</p>
+      </div>
+      <button class="next-step" onclick="showNextStep()">Get Next Step</button>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="image-panel">
+      <img id="equipmentImage" src="images/default.png" alt="Equipment">
+      <div class="caption" id="equipmentCaption">Equipment image will appear here.</div>
+    </div>
   </div>
 
   <script>
@@ -132,138 +202,15 @@
     let darkMode = true;
     function toggleDarkMode() {
       darkMode = !darkMode;
-      if(darkMode) {
-        document.documentElement.style.setProperty('--bg-color', '#0f172a');
-        document.documentElement.style.setProperty('--container-bg', '#1e293b');
-        document.documentElement.style.setProperty('--text-color', '#f1f5f9');
-        document.documentElement.style.setProperty('--button-bg', '#3b82f6');
-        document.documentElement.style.setProperty('--button-hover', '#2563eb');
-        document.documentElement.style.setProperty('--step-bg', '#1e40af');
-        document.documentElement.style.setProperty('--caption-color', '#cbd5e1');
+      const root = document.documentElement;
+      if(darkMode){
+        root.style.setProperty('--bg-color','#0f172a');
+        root.style.setProperty('--panel-bg','#1e293b');
+        root.style.setProperty('--text-color','#f1f5f9');
+        root.style.setProperty('--accent-color','#3b82f6');
+        root.style.setProperty('--accent-hover','#2563eb');
+        root.style.setProperty('--card-bg','#1e40af');
+        root.style.setProperty('--caption-color','#cbd5e1');
       } else {
-        document.documentElement.style.setProperty('--bg-color', '#f0f2f5');
-        document.documentElement.style.setProperty('--container-bg', '#ffffff');
-        document.documentElement.style.setProperty('--text-color', '#1e293b');
-        document.documentElement.style.setProperty('--button-bg', '#3b82f6');
-        document.documentElement.style.setProperty('--button-hover', '#2563eb');
-        document.documentElement.style.setProperty('--step-bg', '#e0f2fe');
-        document.documentElement.style.setProperty('--caption-color', '#475569');
-      }
-    }
-
-    // Options
-    const issues = ["No Internet", "Packet Loss", "Slow Internet", "No Power"];
-    const connectionTypes = ["NBN FTTP", "NBN HFC", "NBN FTTN/FTTB", "LTE/4G", "ADSL/VDSL", "Satellite"];
-
-    const connectionImages = {
-      "NBN FTTP": { src: "images/fttp.jpg", caption: "FTTP NTD – check PON, UNI-D ports, and power." },
-      "NBN HFC": { src: "images/hfc.jpg", caption: "HFC NTD – check coax cable, LAN port, and lights." },
-      "NBN FTTN/FTTB": { src: "images/fttn.jpg", caption: "FTTN/FTTB – check DSL port, splitter, and sync lights." },
-      "LTE/4G": { src: "images/lte.jpg", caption: "LTE Router – check SIM, signal bars, and WAN status." },
-      "ADSL/VDSL": { src: "images/adsl.jpg", caption: "ADSL/VDSL Modem – check DSL port, filter, and sync light." },
-      "Satellite": { src: "images/satellite.jpg", caption: "Satellite Modem – check dish alignment and power." }
-    };
-
-    const steps = {
-      "No Internet": {
-        "NBN FTTP": ["Check NTD lights", "Restart NTD", "Kick connection", "Check UNI-D status", "Port reset", "Loopback test", "Stability profile"],
-        "NBN HFC": ["Check NTD lights", "Restart NTD", "Check coax connection", "Kick connection", "Loopback test", "Port reset"],
-        "NBN FTTN/FTTB": ["Check DSL light", "Restart modem", "Check wall socket", "Kick connection", "Stability profile"],
-        "LTE/4G": ["Check SIM card", "Check signal bars", "Restart modem", "Run speed test"],
-        "ADSL/VDSL": ["Check DSL sync", "Restart modem", "Check filter/splitter"],
-        "Satellite": ["Check modem lights", "Restart modem", "Check dish alignment"]
-      },
-      "Packet Loss": {
-        "NBN FTTP": ["Run ping test", "Check UNI-D status", "Port reset", "Stability profile"],
-        "NBN HFC": ["Run ping test", "Check coax connection", "Port reset"],
-        "NBN FTTN/FTTB": ["Run ping test", "Check DSL sync", "Stability profile"],
-        "LTE/4G": ["Run ping test", "Check signal strength"],
-        "ADSL/VDSL": ["Run ping test", "Check filter/splitter"],
-        "Satellite": ["Run ping test", "Check dish alignment"]
-      },
-      "Slow Internet": {
-        "NBN FTTP": ["Run speed test", "Check UNI-D status", "Port reset", "Stability profile"],
-        "NBN HFC": ["Run speed test", "Check coax connection", "Port reset"],
-        "NBN FTTN/FTTB": ["Run speed test", "Check DSL sync", "Stability profile"],
-        "LTE/4G": ["Run speed test", "Check signal strength"],
-        "ADSL/VDSL": ["Run speed test", "Check filter/splitter"],
-        "Satellite": ["Run speed test", "Check dish alignment"]
-      },
-      "No Power": {
-        "NBN FTTP": ["Check power cable", "Replace power supply"],
-        "NBN HFC": ["Check power cable", "Replace power supply"],
-        "NBN FTTN/FTTB": ["Check power cable", "Replace modem"],
-        "LTE/4G": ["Check power cable", "Replace modem"],
-        "ADSL/VDSL": ["Check power cable", "Replace modem"],
-        "Satellite": ["Check power cable", "Replace power supply"]
-      }
-    };
-
-    // DOM elements
-    const issueSelectionDiv = document.getElementById('issue-selection');
-    const connectionSelectionDiv = document.getElementById('connection-selection');
-    const connectionImageDiv = document.getElementById('connection-image');
-    const stepsDiv = document.getElementById('troubleshoot-steps');
-    const nextActionDiv = document.getElementById('next-action');
-
-    // Issue buttons
-    issues.forEach(issue => {
-      const btn = document.createElement('button');
-      btn.innerText = issue;
-      btn.onclick = () => selectConnection(issue);
-      issueSelectionDiv.appendChild(btn);
-    });
-
-    function selectConnection(issue) {
-      issueSelectionDiv.style.display = 'none';
-      connectionSelectionDiv.innerHTML = `<p style='text-align:center;font-weight:600;'>Select the connection type for '${issue}':</p>`;
-      connectionTypes.forEach(type => {
-        const btn = document.createElement('button');
-        btn.innerText = type;
-        btn.onclick = () => showSteps(issue, type);
-        connectionSelectionDiv.appendChild(btn);
-      });
-    }
-
-    function showSteps(issue, type) {
-      connectionSelectionDiv.style.display = 'none';
-      stepsDiv.innerHTML = '';
-      nextActionDiv.innerHTML = '';
-
-      const imgInfo = connectionImages[type];
-      connectionImageDiv.innerHTML = `<img src='${imgInfo.src}' alt='${type}'><div class='connection-caption'>${imgInfo.caption}</div>`;
-
-      stepsDiv.innerHTML = `<p style='font-weight:600;'>Check what you have already done for '${issue}' on '${type}':</p>`;
-      const form = document.createElement('div');
-      form.className = 'checkbox-group';
-      steps[issue][type].forEach((step, index) => {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type='checkbox' data-index='${index}'> ${step}`;
-        form.appendChild(label);
-      });
-      const submitBtn = document.createElement('button');
-      submitBtn.innerText = 'Get Next Step';
-      submitBtn.onclick = () => calculateNext(issue, type);
-      stepsDiv.appendChild(form);
-      stepsDiv.appendChild(submitBtn);
-    }
-
-    function calculateNext(issue, type) {
-      const checkboxes = document.querySelectorAll('.checkbox-group input');
-      const remainingSteps = [];
-      checkboxes.forEach((cb, idx) => {
-        if(!cb.checked) remainingSteps.push(steps[issue][type][idx]);
-      });
-      if(remainingSteps.length > 0) {
-        nextActionDiv.innerHTML = `<div class='step'>Next Steps: <ul>${remainingSteps.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
-      } else {
-        nextActionDiv.innerHTML = `<div class='step'>All steps completed. Consider escalation if issue persists.</div>`;
-      }
-      const restartBtn = document.createElement('button');
-      restartBtn.innerText = 'Start Over';
-      restartBtn.onclick = () => location.reload();
-      nextActionDiv.appendChild(restartBtn);
-    }
-  </script>
-</body>
-</html>
+        root.style.setProperty('--bg-color','#f0f2f5');
+        root.style.setProperty('--panel-bg','#ffffff');
