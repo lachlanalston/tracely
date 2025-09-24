@@ -127,4 +127,14 @@ function copyNextSteps(){
 // Update equipment image
 function updateImage(tech){
   const img = document.getElementById("equipmentImage");
-  const caption = document.getElementBy
+  const caption = document.getElementById("equipmentCaption");
+  switch(tech){
+    case "FTTP": img.src="images/fttp.png"; caption.textContent="FTTP NTD – check PON & UNI-D ports and lights"; break;
+    case "HFC": img.src="images/hfc.png"; caption.textContent="HFC Modem – check coax and power lights"; break;
+    case "FTTN/FTTB": img.src="images/fttn.png"; caption.textContent="FTTN NTD – check phone line & router connections"; break;
+    case "LTE/4G": img.src="images/lte.png"; caption.textContent="LTE Modem – check SIM & signal indicator lights"; break;
+    case "ADSL/VDSL": img.src="images/adsl.png"; caption.textContent="ADSL Modem – check DSL lights and connections"; break;
+    case "Satellite": img.src="images/satellite.png"; caption.textContent="Satellite modem – check dish and power lights"; break;
+    default: img.src="images/default.png"; caption.textContent="Equipment image will appear here.";
+  }
+}
