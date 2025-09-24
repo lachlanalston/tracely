@@ -82,16 +82,6 @@ button{ cursor:pointer; }
   margin:5px 0;
 }
 
-/* Overview image */
-.overview-image-container img{
-  width:80%;          /* smaller percentage so it doesn't fill whole panel */
-  max-width:400px;    /* prevent huge image on large screens */
-  height:auto;
-  border-radius:12px;
-  border:1px solid var(--caption-color);
-  cursor:pointer;
-}
-
 /* Equipment images side by side */
 .equipment-images-container{
   display:flex;
