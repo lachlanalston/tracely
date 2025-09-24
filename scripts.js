@@ -163,9 +163,7 @@ function updateImage(tech){
 
     modelData.images.forEach(imgData=>{
       const imgWrapper = document.createElement("div");
-      imgWrapper.style.display = "flex";
-      imgWrapper.style.flexDirection = "column";
-      imgWrapper.style.alignItems = "center";
+      imgWrapper.className = "img-wrapper";
 
       const img = document.createElement("img");
       img.src = imgData.src;
@@ -180,13 +178,19 @@ function updateImage(tech){
       container.appendChild(imgWrapper);
     });
   } else {
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "img-wrapper";
+
     const img = document.createElement("img");
     img.src = "images/default.png";
+
     const caption = document.createElement("div");
     caption.className="caption";
     caption.textContent = "Equipment image will appear here.";
-    container.appendChild(img);
-    container.appendChild(caption);
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(caption);
+    container.appendChild(imgWrapper);
   }
 
   updateLightsTable(tech);
