@@ -1,57 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Travely – Internet Troubleshooter</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Travely - MSP Internet Troubleshooter</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header>
+    <h1>Travely - Internet Troubleshooter</h1>
+    <button id="darkModeToggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  </header>
 
-<div class="header">
-  <h1>Travely – Internet Troubleshooter</h1>
-  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
-</div>
-
-<div class="container">
-
-  <!-- CENTER PANEL -->
-  <div class="center-panel">
-    <div>
-      <h2>Technology Type</h2>
+  <main class="main-container">
+    <!-- Left panel -->
+    <div class="left-panel">
+      <h2>Select Technology</h2>
       <div id="techTypeGrid" class="card-grid"></div>
-    </div>
-    <div>
-      <h2>Issue Type</h2>
+
+      <h2>Select Issue</h2>
       <div id="issueTypeGrid" class="card-grid"></div>
+
+      <h2>Actions Done</h2>
+      <div id="checkboxes" class="checkboxes"></div>
+
+      <button onclick="showNextStep()" class="accent-btn">Show Recommended Steps</button>
     </div>
-    <div id="stepsContainer">
-      <h2>Troubleshooting Steps</h2>
-      <div class="checkbox-group" id="checkboxes"></div>
-      <button class="next-step" onclick="showNextStep()">Show Next Step</button>
-      <div id="nextStepsOutput"></div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <!-- Overview connection image -->
+      <div id="overviewImageContainer" class="overview-image-container"></div>
+
+      <!-- Equipment images -->
+      <div id="equipmentImagesContainer" class="equipment-images-container"></div>
+
+      <div class="model-buttons">
+        <button onclick="showPreviousModel()">Previous Model</button>
+        <button onclick="showNextModel()">Next Model</button>
+      </div>
+
+      <div id="lightsTableContainer" class="lights-table-container"></div>
     </div>
+  </main>
+
+  <!-- Next Steps Output -->
+  <div id="nextStepsOutput" class="next-steps-container"></div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <span class="close">&times;</span>
+    <img class="lightbox-content" id="lightbox-img">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
   </div>
 
-  <!-- RIGHT PANEL -->
-  <div class="right-panel">
-    <div id="equipmentImagesContainer" class="equipment-images-container"></div>
-    <div class="model-buttons">
-      <button onclick="showPreviousModel()">Previous Model</button>
-      <button onclick="showNextModel()">Next Model</button>
-    </div>
-    <div id="lightsTableContainer" class="lights-table-container"></div>
-  </div>
-
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox" class="lightbox">
-  <span class="lightbox-close" onclick="closeLightbox()">×</span>
-  <img class="lightbox-content" id="lightbox-img">
-  <div id="lightbox-caption" class="lightbox-caption"></div>
-</div>
-
-<script src="scripts.js"></script>
+  <script src="scripts.js"></script>
 </body>
 </html>
