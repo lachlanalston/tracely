@@ -37,7 +37,6 @@ const techInfo = {
   "HFC": [
     { 
       model: "Arris CM8200",
-      overview: { src: "images/hfc-layout.jpg", caption: "HFC Connection Layout – Street to Building" },
       images: [
         { src: "images/Older HFC NTD - Arris CM8200_Front.png", caption: "Front view – check lights" },
         { src: "images/Older HFC NTD - Arris CM8200_Back.jpg", caption: "Back view – check ports" }
@@ -154,29 +153,8 @@ function copyNextSteps(){
   });
 }
 
-// Display overview image
-function updateOverviewImage(tech){
-  const container = document.getElementById("overviewImageContainer");
-  container.innerHTML="";
-
-  if(techInfo[tech] && techInfo[tech].length>0){
-    const modelData = techInfo[tech][currentModelIndex];
-    if(modelData.overview){
-      const img = document.createElement("img");
-      img.src = modelData.overview.src;
-      img.alt = modelData.model + " Overview";
-      img.addEventListener("click", () => {
-        openLightbox(modelData.overview.src, modelData.overview.caption);
-      });
-      container.appendChild(img);
-    }
-  }
-}
-
-// Update images + overview + lights
+// Update images + caption
 function updateImage(tech){
-  updateOverviewImage(tech);
-
   const container = document.getElementById("equipmentImagesContainer");
   container.innerHTML="";
 
@@ -191,6 +169,7 @@ function updateImage(tech){
       img.src = imgData.src;
       img.alt = modelData.model;
 
+      // FIXED: reliable click for lightbox
       img.addEventListener("click", () => {
         openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
       });
@@ -267,7 +246,7 @@ function openLightbox(src, caption){
   const lbImg = document.getElementById("lightbox-img");
   const lbCaption = document.getElementById("lightbox-caption");
 
-  lb.style.display = "flex";
+  lb.style.display = "block";
   lbImg.src = src;
   lbCaption.textContent = caption;
 }
