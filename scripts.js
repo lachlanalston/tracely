@@ -25,14 +25,62 @@ function toggleDarkMode() {
 // DATA
 const techTypes = ["FTTP","HFC","FTTN/FTTB","LTE/4G","ADSL/VDSL","Satellite"];
 const issueTypes = ["No Internet","Packet Loss","Slow Internet","No Power"];
+
+// OPERATIONAL TROUBLESHOOTING STEPS
 const stepsData = {
-  "No Internet":["Check NTD Lights","Restart NTD","Kick Connection","Loopback Test","Port Reset","Stability Profile"],
-  "Packet Loss":["Check Cabling","Restart Router","Ping Test","Check for Interference"],
-  "Slow Internet":["Speed Test","Restart Modem","Check Cabling","Check Background Traffic"],
-  "No Power":["Check Power Supply","Reset NTD","Check Outlet"]
+  "No Internet":[
+    "Confirm device is powered",
+    "Check known NBN outage",
+    "Check Connection / NTD Status",
+    "UNI-D Status",
+    "Loopback Test",
+    "Kick Connection",
+    "Port Reset",
+    "Restart Modem/Router",
+    "Raise with ISP",
+    "Onsite",
+    "Replace Hardware"
+  ],
+  "Packet Loss":[
+    "Confirm device is powered",
+    "Check known NBN outage",
+    "Check Cabling",
+    "Check Connection / NTD Status",
+    "Loopback Test",
+    "Restart Router",
+    "Check for Interference",
+    "Raise with ISP",
+    "Onsite"
+  ],
+  "Slow Internet":[
+    "Confirm device is powered",
+    "Check known NBN outage",
+    "Speed Test",
+    "Restart Modem",
+    "Check Cabling",
+    "Check Background Traffic",
+    "Loopback Test",
+    "Raise with ISP"
+  ],
+  "No Power":[
+    "Confirm device is powered",
+    "Check known NBN outage",
+    "Check Power Supply",
+    "Reset NTD",
+    "Raise with ISP"
+  ]
 };
 
-// TECH INFO WITH MODELS
+// MARK STEPS WITH OUTAGE WARNING
+const stepsOutageRisk = {
+  "Loopback Test": "Minor Outage ⚠️",
+  "Kick Connection": "Will Disrupt Connection ⚠️",
+  "Port Reset": "Will Disrupt Connection ⚠️",
+  "Restart Modem/Router": "Will Disrupt Connection ⚠️",
+  "Restart Router": "Will Disrupt Connection ⚠️"
+};
+
+// HFC only images/models for now
 const techInfo = {
   "HFC": [
     { 
@@ -42,20 +90,10 @@ const techInfo = {
         { src: "images/Older HFC NTD - Arris CM8200_Back.jpg", caption: "Back view – check ports" }
       ]
     }
-  ],
-  "FTTP":[
-    {
-      model:"NTD X100",
-      images:[
-        {src:"images/FTTP NTD X100_Front.png", caption:"Front view"},
-        {src:"images/FTTP NTD X100_Back.png", caption:"Back view"}
-      ]
-    }
   ]
-  // Add more models for other technologies here
 };
 
-// LIGHTS DATA (per tech/model)
+// Lights table data
 const lightsData = {
   "HFC": {
     "Arris CM8200": [
@@ -67,62 +105,7 @@ const lightsData = {
       ["On","On","On","Flashing","Downstream and upstream found - retrieving setup information from NBN"],
       ["On","On","On","On","Ready for service"]
     ]
-  },
-  "FTTP": {
-    "NTD X100": [
-      ["Power","Link","Internet","Meaning"],
-      ["Off","Off","Off","No power to the NTD"],
-      ["On","Flashing","Off","NTD is booting up"],
-      ["On","On","Flashing","Connected to NBN, waiting for activation"],
-      ["On","On","On","Ready for service"]
-    ]
   }
-};
-
-// SERVICE CLASSES DATA (per tech)
-const serviceClassesData = {
-  "FTTP":[
-    ["Class","Definition"],
-    ["Service Class 0","Location not ready yet"],
-    ["Service Class 1","Location serviceable, no internal equipment installed"],
-    ["Service Class 2","External devices installed, internal pending"],
-    ["Service Class 3","Fully installed, ready to activate"]
-  ],
-  "FW":[
-    ["Class","Definition"],
-    ["Service Class 4","Planned, tower not built"],
-    ["Service Class 5","Serviceable, no equipment installed"],
-    ["Service Class 6","Ready to connect, NTD installed"]
-  ],
-  "Satellite":[
-    ["Class","Definition"],
-    ["Service Class 7","Planned, infrastructure not built"],
-    ["Service Class 8","Serviceable, no dish/NTD installed"],
-    ["Service Class 9","Ready to connect, NBN device installed"]
-  ],
-  "FTTN":[
-    ["Class","Definition"],
-    ["Service Class 10","Planned, copper not ready"],
-    ["Service Class 11","Ready with additional works needed"],
-    ["Service Class 12","Ready, jumper cabling only"],
-    ["Service Class 13","Fully ready, activate in 1-5 days"]
-  ],
-  "HFC":[
-    ["Class","Definition"],
-    ["Service Class 20","Planned, not ready yet"],
-    ["Service Class 21","Ready, additional works needed"],
-    ["Service Class 22","Ready, install network device/wall point"],
-    ["Service Class 23","Ready, additional works may be needed"],
-    ["Service Class 24","Fully ready, activate in 1-5 days"]
-  ],
-  "FTTC":[
-    ["Class","Definition"],
-    ["Service Class 30","Planned, not ready yet"],
-    ["Service Class 31","Ready, additional works needed for lead-in"],
-    ["Service Class 32","Ready, connection to distribution point required"],
-    ["Service Class 33","Ready, additional works may be needed"],
-    ["Service Class 34","Fully ready, activate in 1-5 days"]
-  ]
 };
 
 let selectedTech = "";
@@ -168,7 +151,7 @@ function populateSteps(issue){
   if(stepsData[issue]){
     stepsData[issue].forEach(step=>{
       const label = document.createElement("label");
-      label.innerHTML=`<input type="checkbox"> ${step}`;
+      label.innerHTML=`<input type="checkbox"> ${step}${stepsOutageRisk[step] ? ' ('+stepsOutageRisk[step]+')' : ''}`;
       container.appendChild(label);
     });
   }
@@ -201,7 +184,8 @@ function showNextStep(){
             style += "font-weight:700; border-left:4px solid var(--accent-color); padding-left:6px;";
             firstIncomplete = false;
           }
-          return `<li style="margin-bottom:8px; ${style}">${step}</li>`;
+          const risk = stepsOutageRisk[step] ? ` <span style="color:red;">(${stepsOutageRisk[step]})</span>` : "";
+          return `<li style="margin-bottom:8px; ${style}">${step}${risk}</li>`;
         }).join('')}
       </ol>
     </div>
@@ -219,7 +203,7 @@ function copyNextSteps(){
   });
 }
 
-// UPDATE IMAGES + TABLES
+// Update images + caption
 function updateImage(tech){
   const container = document.getElementById("equipmentImagesContainer");
   container.innerHTML="";
@@ -267,7 +251,6 @@ function updateImage(tech){
   }
 
   updateLightsTable(tech);
-  updateServiceClasses(tech);
 }
 
 // Lights table
@@ -292,26 +275,6 @@ function updateLightsTable(tech){
     });
     container.appendChild(table);
   }
-}
-
-// Service classes table
-function updateServiceClasses(tech){
-  const container = document.getElementById("serviceClassesContainer");
-  container.innerHTML="";
-  const tableData = serviceClassesData[tech] || [];
-  if(!tableData.length) return;
-
-  const table = document.createElement("table");
-  tableData.forEach((row,i)=>{
-    const tr = document.createElement("tr");
-    row.forEach(cell=>{
-      const td = i===0 ? document.createElement("th") : document.createElement("td");
-      td.textContent = cell;
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
-  container.appendChild(table);
 }
 
 // Model navigation
