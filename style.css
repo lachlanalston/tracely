@@ -23,7 +23,10 @@ body {
   background: var(--panel-bg);
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-.header h1 { margin:0; font-size:1.8rem; }
+.header h1 { 
+  margin:0; 
+  font-size:1.8rem; 
+}
 .dark-toggle {
   padding: 8px 16px;
   border-radius: 12px;
@@ -33,7 +36,10 @@ body {
   cursor: pointer;
   font-weight: 600;
 }
-.dark-toggle:hover { background: var(--accent-color); color:white; }
+.dark-toggle:hover { 
+  background: var(--accent-color); 
+  color:white; 
+}
 
 .container {
   display: grid;
@@ -67,8 +73,14 @@ body {
   font-weight: 600;
   transition: all 0.2s;
 }
-.card:hover { transform: translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.3);}
-.card.selected { background: var(--accent-color); color:white; }
+.card:hover { 
+  transform: translateY(-2px); 
+  box-shadow:0 6px 15px rgba(0,0,0,0.3);
+}
+.card.selected { 
+  background: var(--accent-color); 
+  color:white; 
+}
 
 .checkbox-group label {
   display: flex;
@@ -76,7 +88,12 @@ body {
   margin-bottom: 10px;
   cursor: pointer;
 }
-.checkbox-group input[type='checkbox'] { margin-right: 10px; width:18px; height:18px; accent-color: var(--accent-color); }
+.checkbox-group input[type='checkbox'] { 
+  margin-right: 10px; 
+  width:18px; 
+  height:18px; 
+  accent-color: var(--accent-color); 
+}
 
 .next-step {
   background: var(--accent-color);
@@ -87,7 +104,9 @@ body {
   cursor: pointer;
   border:none;
 }
-.next-step:hover { background: var(--accent-hover); }
+.next-step:hover { 
+  background: var(--accent-hover); 
+}
 
 .right-panel {
   background: var(--panel-bg);
@@ -145,31 +164,34 @@ body {
   font-weight: 600;
   transition: background 0.2s;
 }
-.model-buttons button:hover { background: var(--accent-hover); }
+.model-buttons button:hover { 
+  background: var(--accent-hover); 
+}
 
-.lights-table-container, .service-classes-container {
+.lights-table-container {
   margin-top: 15px;
   width: 100%;
   overflow-x: auto;
 }
-
-.lights-table-container table, .service-classes-container table {
+.lights-table-container table {
   width: 100%;
   border-collapse: collapse;
   color: var(--text-color);
 }
-
-.lights-table-container th, .lights-table-container td,
-.service-classes-container th, .service-classes-container td {
+.lights-table-container th, 
+.lights-table-container td {
   border: 1px solid var(--caption-color);
   padding: 6px 10px;
   text-align: center;
   font-size: 0.9rem;
 }
-
-.lights-table-container th, .service-classes-container th {
+.lights-table-container th {
   background-color: var(--panel-bg);
   font-weight: 600;
+}
+
+#serviceClassesContainer {
+  margin-top: 20px; /* spacing below the lights table */
 }
 
 #nextStepsOutput {
