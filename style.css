@@ -147,24 +147,27 @@ body {
 }
 .model-buttons button:hover { background: var(--accent-hover); }
 
-.lights-table-container {
+.lights-table-container, .service-classes-container {
   margin-top: 15px;
   width: 100%;
   overflow-x: auto;
 }
-.lights-table-container table {
+
+.lights-table-container table, .service-classes-container table {
   width: 100%;
   border-collapse: collapse;
   color: var(--text-color);
 }
-.lights-table-container th, 
-.lights-table-container td {
+
+.lights-table-container th, .lights-table-container td,
+.service-classes-container th, .service-classes-container td {
   border: 1px solid var(--caption-color);
   padding: 6px 10px;
   text-align: center;
   font-size: 0.9rem;
 }
-.lights-table-container th {
+
+.lights-table-container th, .service-classes-container th {
   background-color: var(--panel-bg);
   font-weight: 600;
 }
