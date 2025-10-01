@@ -25,6 +25,7 @@ function toggleDarkMode() {
 // DATA
 const techTypes = ["FTTP","HFC","FTTN/FTTB","LTE/4G","ADSL/VDSL","Satellite"];
 const issueTypes = ["No Internet","Packet Loss","Slow Internet","No Power"];
+
 const stepsData = {
   "No Internet":["Check NTD Lights","Restart NTD","Kick Connection","Loopback Test","Port Reset","Stability Profile"],
   "Packet Loss":["Check Cabling","Restart Router","Ping Test","Check for Interference"],
@@ -32,7 +33,7 @@ const stepsData = {
   "No Power":["Check Power Supply","Reset NTD","Check Outlet"]
 };
 
-// HFC only images/models for now
+// HFC example images/models
 const techInfo = {
   "HFC": [
     { 
@@ -59,42 +60,43 @@ const lightsData = {
   }
 };
 
+// Service Classes Data
 const serviceClassesData = {
   "FTTP":[
-    ["Service Class 0","The location will be serviceable by Fibre to the Premises (FTTP) in the future, but it's not ready yet – NBN hasn’t finished connecting the local area. Aussie customers can pre-sign, but you will have to wait until the area is ready for service."],
-    ["Service Class 1","The location is serviceable by fibre, however no NBN equipment has been installed at the premises yet. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 2","The location is ready to connect with fibre technology. The external devices have been installed at the premises, but no internal equipment is installed yet. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 3","The location is fully installed and serviceable by fibre, with both the external and internal devices installed at the premises. You can order a service and it will be activated in 1-5 days."]
+    ["Service Class 0","The location will be serviceable by FTTP in the future, but not ready yet."],
+    ["Service Class 1","Fibre serviceable but no equipment installed yet."],
+    ["Service Class 2","External devices installed, internal not installed."],
+    ["Service Class 3","Fully installed and serviceable."]
   ],
   "FW":[
-    ["Service Class 4","The location is planned to be serviceable by Fixed Wireless, but the tower is not built or ready for use. You can’t connect yet, but Aussie customers can pre-sign. You’ll have to wait for NBN to announce the area is ready for service."],
-    ["Service Class 5","The location is now serviceable by NBN Fixed Wireless, but there’s no equipment installed at the premises. You are able to order a service and an installation appointment can be made."],
-    ["Service Class 6","The location is ready to connect with Fixed Wireless technology. The antenna and the NTD (NBN connection device) are installed. You can order a service and it will be activated in 1-5 days."]
+    ["Service Class 4","Planned for Fixed Wireless but tower not built."],
+    ["Service Class 5","Serviceable but no equipment installed."],
+    ["Service Class 6","Ready to connect, antenna and NTD installed."]
   ],
   "Satellite":[
-    ["Service Class 7","The location is planned to be serviceable by Sky Muster (Satellite), but the infrastructure is not built or ready for use. You can’t connect yet, but you may be able to pre-sign. You’ll have to wait for NBN to announce the area is ready for service."],
-    ["Service Class 8","The location is now serviceable by Satellite, but there’s no dish or NBN connection box installed at the property yet. You are able to order a service and an installation appointment can be made."],
-    ["Service Class 9","The location is ready to connect with Satellite technology. The antenna and the NBN connection device are installed. You can order a service and it can be activated remotely."]
+    ["Service Class 7","Planned for Sky Muster, infrastructure not ready."],
+    ["Service Class 8","Serviceable but no dish or NBN device installed."],
+    ["Service Class 9","Ready to connect, antenna and device installed."]
   ],
   "FTTN":[
-    ["Service Class 10","The location is planned to be serviceable by copper for FTTN/FTTB but is not ready yet. Customers can pre-sign with us, but NBN are still in planning stages. Aussie customers can pre-sign, but you will have to wait until the area is ready for service."],
-    ["Service Class 11","The location is ready to connect using copper technology, but additional works are needed. It’s best to make some arrangements prior to your installation for the lead-in cabling. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 12","The location is ready to connect using copper technology, but additional works are needed. This class only requires jumper cabling to connect you to the network. You’re able to order a service and an installation appointment can be made if the line is not already active. The technician will not attend the home and will perform required work at the node."],
-    ["Service Class 13","The location is ready to connect using copper technology, and all required cabling is installed and connected. You can order a service and it will be activated in 1-5 days."]
+    ["Service Class 10","Planned for copper, not ready yet."],
+    ["Service Class 11","Ready but additional works needed."],
+    ["Service Class 12","Ready, jumper cabling only required."],
+    ["Service Class 13","Ready and fully connected."]
   ],
   "HFC":[
-    ["Service Class 20","The location will be serviceable by Hybrid Fibre (HFC) in the future, but it’s not ready yet – NBN hasn’t finished connecting the local area. Aussie customers can pre-sign, but you will have to wait until the area is ready for service."],
-    ["Service Class 21","The location is ready to connect using hybrid fibre technology, but additional works are needed to install lead-in cabling. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 22","The location is ready to connect using HFC technology, but additional works are needed to install a network device and wall point. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 23","The location is ready to connect using HFC technology, but additional works may be needed to install a network device. You’re able to order a service and an installation appointment can be made if a self-installation kit cannot be used."],
-    ["Service Class 24","The location is ready to connect using HFC technology, and all required cabling/equipment has been installed. You can order a service and it will be activated in 1-5 days. ¹"]
+    ["Service Class 20","Planned HFC, not ready yet."],
+    ["Service Class 21","Ready but additional works for lead-in cabling."],
+    ["Service Class 22","Ready, network device and wall point needed."],
+    ["Service Class 23","Ready, additional works may be needed."],
+    ["Service Class 24","Ready, all cabling/equipment installed."]
   ],
   "FTTC":[
-    ["Service Class 30","The location will be serviceable by copper and fibre (FTTC) in the future, but it’s not ready yet – NBN hasn’t finished connecting the local area. Aussie customers can pre-sign, but you will have to wait until the area is ready for service."],
-    ["Service Class 31","The location is ready to connect using copper and fibre technologies, but additional works are needed to install lead-in cabling. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 32","The location is ready to connect using copper and fibre technologies, but additional works are needed to connect the premises to a distribution point. You’re able to order a service and an installation appointment can be made."],
-    ["Service Class 33","The location is ready to connect using FTTC, but additional works may be needed to install a network device. You’re able to order a service and an installation appointment can be made if a self-installation kit cannot be used."],
-    ["Service Class 34","The location is ready to connect using FTTC, and all required cabling/equipment has been installed. You can order a service and it will be activated in 1-5 days. ²"]
+    ["Service Class 30","Planned FTTC, not ready yet."],
+    ["Service Class 31","Ready, additional lead-in works needed."],
+    ["Service Class 32","Ready, additional works to connect to distribution point."],
+    ["Service Class 33","Ready, network device may need self-installation."],
+    ["Service Class 34","Ready, all cabling/equipment installed."]
   ]
 };
 
@@ -114,7 +116,7 @@ techTypes.forEach(t=>{
     document.querySelectorAll("#techTypeGrid .card").forEach(c=>c.classList.remove("selected"));
     card.classList.add("selected");
     updateImage(t);
-    updateServiceClassesTable(t); // <-- NEW
+    updateServiceClassesTable(t); // <-- update service classes table
   };
   techContainer.appendChild(card);
 });
@@ -134,83 +136,185 @@ issueTypes.forEach(i=>{
   issueContainer.appendChild(card);
 });
 
-// Populate Steps
+// Populate checkboxes
 function populateSteps(issue){
-  const checkboxesDiv = document.getElementById("checkboxes");
-  checkboxesDiv.innerHTML="";
-  stepsData[issue].forEach(step=>{
-    const label = document.createElement("label");
-    const input = document.createElement("input");
-    input.type="checkbox";
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(step));
-    checkboxesDiv.appendChild(label);
+  const container = document.getElementById("checkboxes");
+  container.innerHTML="";
+  document.getElementById("nextStepsOutput").innerHTML="";
+  if(stepsData[issue]){
+    stepsData[issue].forEach(step=>{
+      const label = document.createElement("label");
+      label.innerHTML=`<input type="checkbox"> ${step}`;
+      container.appendChild(label);
+    });
+  }
+}
+
+// Next step + copy button
+function showNextStep(){
+  const container = document.getElementById("nextStepsOutput");
+  if(!selectedIssue) return;
+
+  let steps = stepsData[selectedIssue] || [];
+  const extraActions = ["Raise with ISP","Onsite","Replace Hardware"];
+  const allSteps = steps.concat(extraActions);
+
+  const checkboxes = document.querySelectorAll("#checkboxes input[type='checkbox']");
+  let firstIncomplete = true;
+
+  container.innerHTML = `
+    <div style="position: relative; padding:16px; border-radius:16px; background:var(--panel-bg); box-shadow:0 6px 15px rgba(0,0,0,0.3);">
+      <button id="copySmallBtn" onclick="copyNextSteps()" 
+              style="position:absolute; top:10px; right:10px; background:var(--accent-color); border:none; color:white; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:0.9rem;">
+        Copy
+      </button>
+      <h3 style="margin-top:0; margin-bottom:10px;">Recommended Next Steps</h3>
+      <ol style="padding-left:20px; margin:0;" id="stepList">
+        ${allSteps.map((step, i) => {
+          const done = checkboxes[i] && checkboxes[i].checked;
+          let style = done ? "color:#94a3b8;" : "";
+          if(!done && firstIncomplete) {
+            style += "font-weight:700; border-left:4px solid var(--accent-color); padding-left:6px;";
+            firstIncomplete = false;
+          }
+          return `<li style="margin-bottom:8px; ${style}">${step}</li>`;
+        }).join('')}
+      </ol>
+    </div>
+  `;
+}
+
+function copyNextSteps(){
+  const steps = document.querySelectorAll("#stepList li");
+  if(!steps.length) return;
+  const text = Array.from(steps).map(li=>li.textContent).join("\n");
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copySmallBtn");
+    btn.textContent = "Copied!";
+    setTimeout(()=>{ btn.textContent = "Copy"; }, 1500);
   });
 }
 
-// Show Next Step
-function showNextStep(){
-  const checkboxes = document.querySelectorAll("#checkboxes input");
-  for(const cb of checkboxes){
-    if(!cb.checked){
-      cb.checked=true;
-      document.getElementById("nextStepsOutput").innerHTML = `Step: ${cb.nextSibling.textContent}`;
-      return;
-    }
-  }
-  document.getElementById("nextStepsOutput").innerHTML = "All steps completed!";
-}
-
-// Update Equipment Images
-function updateImage(t){
+// Update images + caption
+function updateImage(tech){
   const container = document.getElementById("equipmentImagesContainer");
   container.innerHTML="";
-  const info = techInfo[t];
-  if(!info) return;
-  const model = info[currentModelIndex];
-  model.images.forEach(img=>{
-    const div = document.createElement("div");
-    div.className="img-wrapper";
-    const image = document.createElement("img");
-    image.src=img.src;
+
+  if(techInfo[tech] && techInfo[tech].length>0){
+    const modelData = techInfo[tech][currentModelIndex];
+
+    modelData.images.forEach(imgData=>{
+      const imgWrapper = document.createElement("div");
+      imgWrapper.className = "img-wrapper";
+
+      const img = document.createElement("img");
+      img.src = imgData.src;
+      img.alt = modelData.model;
+
+      img.addEventListener("click", () => {
+        openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
+      });
+
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.innerHTML = `<strong>${modelData.model}</strong> – ${imgData.caption}`;
+
+      imgWrapper.appendChild(img);
+      imgWrapper.appendChild(caption);
+      container.appendChild(imgWrapper);
+    });
+  } else {
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "img-wrapper";
+
+    const img = document.createElement("img");
+    img.src = "images/default.png";
+    img.addEventListener("click", () => {
+      openLightbox("images/default.png", "Equipment image will appear here.");
+    });
+
     const caption = document.createElement("div");
     caption.className="caption";
-    caption.textContent=img.caption;
-    div.appendChild(image);
-    div.appendChild(caption);
-    container.appendChild(div);
-    image.onclick=()=>openLightbox(img.src,img.caption);
-  });
+    caption.textContent = "Equipment image will appear here.";
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(caption);
+    container.appendChild(imgWrapper);
+  }
+
+  updateLightsTable(tech);
 }
 
-// Model Navigation
+// Lights table
+function updateLightsTable(tech){
+  const container = document.getElementById("lightsTableContainer");
+  container.innerHTML="";
+  if(!techInfo[tech]) return;
+
+  const model = techInfo[tech][currentModelIndex].model;
+  const tableData = (lightsData[tech] && lightsData[tech][model]) || [];
+
+  if(tableData.length){
+    const table = document.createElement("table");
+    tableData.forEach((row,i)=>{
+      const tr = document.createElement("tr");
+      row.forEach(cell=>{
+        const td = i===0 ? document.createElement("th") : document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+    container.appendChild(table);
+  }
+}
+
+// Model navigation
 function showNextModel(){
-  const info = techInfo[selectedTech];
-  if(!info) return;
-  currentModelIndex = (currentModelIndex+1)%info.length;
+  if(!selectedTech || !techInfo[selectedTech]) return;
+  currentModelIndex = (currentModelIndex +1) % techInfo[selectedTech].length;
   updateImage(selectedTech);
 }
 function showPreviousModel(){
-  const info = techInfo[selectedTech];
-  if(!info) return;
-  currentModelIndex = (currentModelIndex-1+info.length)%info.length;
+  if(!selectedTech || !techInfo[selectedTech]) return;
+  currentModelIndex = (currentModelIndex -1 + techInfo[selectedTech].length) % techInfo[selectedTech].length;
   updateImage(selectedTech);
 }
 
-// Lightbox
-function openLightbox(src,caption){
-  document.getElementById("lightbox").style.display="block";
-  document.getElementById("lightbox-img").src=src;
-  document.getElementById("lightbox-caption").textContent=caption;
+// Lightbox functions
+function openLightbox(src, caption){
+  const lb = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lightbox-img");
+  const lbCaption = document.getElementById("lightbox-caption");
+
+  lb.style.display = "block";
+  lbImg.src = src;
+  lbCaption.textContent = caption;
 }
-function closeLightbox(){ document.getElementById("lightbox").style.display="none"; }
+
+function closeLightbox(){
+  document.getElementById("lightbox").style.display = "none";
+}
 
 // SERVICE CLASSES TABLE
 function updateServiceClassesTable(tech){
   const container = document.getElementById("serviceClassesContainer");
   container.innerHTML="";
-  const tableData = serviceClassesData[tech];
+
+  // Map displayed tech type to key in serviceClassesData
+  const keyMap = {
+    "FTTN/FTTB":"FTTN",
+    "FTTP":"FTTP",
+    "HFC":"HFC",
+    "Satellite":"Satellite",
+    "LTE/4G":"FW",
+    "ADSL/VDSL":"FTTC"
+  };
+
+  const key = keyMap[tech];
+  const tableData = serviceClassesData[key];
   if(!tableData) return;
+
   const table = document.createElement("table");
   const header = document.createElement("tr");
   ["Class","Definition"].forEach(h=>{
@@ -219,6 +323,7 @@ function updateServiceClassesTable(tech){
     header.appendChild(th);
   });
   table.appendChild(header);
+
   tableData.forEach(row=>{
     const tr=document.createElement("tr");
     const td1=document.createElement("td"); td1.textContent=row[0];
@@ -226,5 +331,6 @@ function updateServiceClassesTable(tech){
     tr.appendChild(td1); tr.appendChild(td2);
     table.appendChild(tr);
   });
+
   container.appendChild(table);
 }
