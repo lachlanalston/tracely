@@ -1021,6 +1021,17 @@ body.light .fault-detail-input::-webkit-calendar-picker-indicator { filter: none
   font-size: 0.9rem;
   color: var(--success);
 }
+.resolved-banner.concluded {
+  background: var(--warning-muted);
+  border-color: var(--warning-border);
+}
+.resolved-banner.concluded .resolved-banner-icon {
+  background: var(--warning);
+  color: #000;
+}
+.resolved-banner.concluded .resolved-banner-content strong {
+  color: var(--warning);
+}
 .resolved-banner-content span {
   font-size: 0.78rem;
   color: var(--text-2);

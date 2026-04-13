@@ -55,8 +55,65 @@ const F = {
     { label: "Signal Level", key: "signal",  inputType: "text", placeholder: "e.g. −65 dBm" },
     { label: "Status",       key: "status",  inputType: "select",
       options: ["Normal – within expected range", "Below expected – possible misalignment", "Cannot access modem admin"] }
+  ],
+  voip: [
+    { label: "Outcome",      key: "outcome", inputType: "select",
+      options: ["Escalated to phone system admin", "Phone system admin confirmed server-side fault", "Phone system admin: config change required", "Awaiting phone system admin investigation"] },
+    { label: "Ticket / Ref #", key: "ref",   inputType: "text", placeholder: "e.g. ticket number" }
   ]
 };
+
+// ── Shared issue steps (tech-agnostic) ───────────────────────────
+const WIFI_STEPS = [
+  { text: "Identify scope – single device, multiple devices, or all devices affected?", disruptive: false,
+    options: ["Single device affected only", "Multiple devices – same AP area", "All devices – all APs affected", "All devices – specific area only"] },
+  { text: "Confirm wired connection works – connect via Ethernet to rule out the internet connection", disruptive: false,
+    options: ["Wired connection confirmed working – internet OK", "Wired connection also failing – not a Wi-Fi issue"],
+    exits: { "Wired connection also failing – not a Wi-Fi issue": "Wired connection failing – issue is not Wi-Fi related. Investigate internet/LAN fault separately" }},
+  { text: "Check wireless controller – are affected APs showing online?", disruptive: false,
+    options: ["All APs online in controller", "Affected AP showing offline in controller", "Controller itself unreachable"] },
+  { text: "Check AP LED status on the affected unit", disruptive: false,
+    options: ["AP LED solid – normal operation", "AP LED flashing – booting or upgrading firmware", "AP LED off – no power", "AP LED red/amber – fault state"] },
+  { text: "Check SSID is broadcasting on the correct band (2.4GHz / 5GHz)", disruptive: false,
+    options: ["SSID visible on correct bands – confirmed", "SSID not visible on 5GHz – 2.4GHz only", "SSID not visible at all"] },
+  { text: "Check client can connect to SSID and receives a correct IP address", disruptive: false,
+    options: ["Client connects and gets correct IP – connectivity issue only", "Client connects but no IP – DHCP failure", "Client cannot connect – authentication failure", "Client gets wrong IP – possible VLAN mismatch"] },
+  { text: "Check VLAN configuration on the SSID matches the switch port trunk", disruptive: false,
+    options: ["VLAN config matches switch port – correct", "VLAN mismatch found – corrected, retesting", "Cannot verify – no switch access"] },
+  { text: "Check RF environment – channel utilisation, interference, neighbouring networks", disruptive: false,
+    options: ["Channel utilisation normal – no congestion", "High channel utilisation – channel changed, monitoring", "Interference source identified nearby", "No clear RF issues found"] },
+  { text: "Reboot affected AP via controller or physical power cycle", disruptive: true,
+    options: ["Rebooted – resolved", "Rebooted – no change", "Rebooted – briefly resolved then dropped again"] },
+  { text: "Check PoE switch port powering the AP – VLAN tagging and PoE budget", disruptive: false,
+    options: ["Switch port OK – VLAN correct, PoE active", "PoE budget exceeded – AP underpowered", "VLAN mismatch on switch port – corrected", "Switch port was disabled – re-enabled"] },
+  { text: "Re-adopt / re-provision AP in controller if showing offline", disruptive: false,
+    options: ["AP re-adopted – resolved", "AP re-adopted – still not functioning correctly", "Cannot re-adopt – controller unreachable"] },
+  { text: "Factory reset AP and re-provision as last resort", disruptive: true,
+    options: ["Factory reset and re-provisioned – resolved", "Factory reset – still not working – hardware fault suspected"],
+    exits: { "Factory reset – still not working – hardware fault suspected": "AP hardware fault confirmed after factory reset – replacement unit required" }}
+];
+
+const VOIP_STEPS = [
+  { text: "Identify symptom – no registration, one-way audio, poor quality, or can't make/receive calls", disruptive: false,
+    options: ["Extension not registering", "One-way audio – caller or callee cannot hear", "Poor call quality – choppy, echo, or cutting out", "Cannot make outbound calls", "Cannot receive inbound calls", "Calls dropping mid-conversation"] },
+  { text: "Check phone system management console is accessible from the site", disruptive: false,
+    options: ["Management console accessible – confirmed", "Management console not accessible from site"],
+    exits: { "Management console not accessible from site": "Phone system management console unreachable – connectivity fault preventing VoIP service. Investigate internet connection first" }},
+  { text: "Check extension registration status in the phone system", disruptive: false,
+    options: ["Extension registered – showing online", "Extension not registered – showing offline", "Extension registering intermittently"] },
+  { text: "Check SIP ALG on router/firewall – disable if enabled (common cause of VoIP registration and audio issues)", disruptive: false,
+    options: ["SIP ALG already disabled – confirmed", "SIP ALG was enabled – disabled, retesting", "Cannot verify – no router access"] },
+  { text: "Check firewall policy – SIP ports 5060/5061 and RTP port range must be permitted outbound", disruptive: false,
+    options: ["SIP and RTP ports permitted – confirmed", "Restrictive rule found – ports opened, retesting", "Cannot verify – no firewall access"] },
+  { text: "Run ping from site to phone system server – check latency and packet loss", disruptive: false, fields: F.ping },
+  { text: "Check QoS / traffic shaping on router – voice traffic should be prioritised", disruptive: false,
+    options: ["QoS configured for voice traffic – OK", "No QoS configured – voice unmanaged", "QoS policy updated – monitoring"] },
+  { text: "Check phone network settings – IP address, subnet, gateway, and VLAN", disruptive: false,
+    options: ["Network settings correct – confirmed", "Incorrect settings found – corrected, retesting", "Phone on wrong VLAN – corrected, retesting"] },
+  { text: "Reboot phones", disruptive: true,
+    options: ["Rebooted – registered and working", "Rebooted – still not registering", "Rebooted – call quality improved"] },
+  { text: "Raise fault with phone system administrator – provide registration status and ping results", disruptive: false, fields: F.voip }
+];
 
 const stepsData = {
   "FTTP": {
@@ -157,7 +214,33 @@ const stepsData = {
       { text: "Inspect NTD for physical damage or burn marks", disruptive: false,
         options: ["No visible damage", "Physical damage or burn marks found – replacement required"] },
       { text: "Raise fault with ISP – NTD likely needs replacement", disruptive: false, fields: F.fault }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm NTD has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages or scheduled maintenance", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"],
+        exits: {
+          "Active outage confirmed in area": "Network outage confirmed in area – dropouts attributed to active outage. Monitor for restoration",
+          "Scheduled maintenance listed": "Scheduled maintenance in progress – dropouts expected until maintenance window closes"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops at peak hours only (evenings/weekends)", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check router/firewall WAN event log – PPPoE session drops, interface flaps, auth failures", disruptive: false,
+        options: ["PPPoE session drops visible in logs", "Interface flapping visible in logs", "Authentication failures in logs", "No relevant events in logs", "Cannot access router logs"] },
+      { text: "Check physical cabling – NTD to router WAN port", disruptive: false,
+        options: ["All cables secure – no issues found", "Cable fault found – replaced, monitoring", "Cables reseated – monitoring"] },
+      { text: "Check PON LED stability – should be solid green, intermittent flashing indicates fibre instability", disruptive: false,
+        options: ["PON LED stable solid green – OK", "PON LED intermittently flashing – instability detected", "PON LED off – no fibre signal"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
+      { text: "Power cycle NTD – unplug 30 sec, allow ~2 min to reconnect", disruptive: true,
+        options: ["Power cycled – stable since", "Power cycled – briefly stable then dropped again", "Power cycled – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   },
   "HFC": {
     "No Internet": [
@@ -252,7 +335,33 @@ const stepsData = {
       { text: "Inspect NTD for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
       { text: "Raise fault with ISP – NTD replacement likely", disruptive: false, fields: F.fault }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm NTD has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages or scheduled maintenance", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"],
+        exits: {
+          "Active outage confirmed in area": "Network outage confirmed in area – dropouts attributed to active outage. Monitor for restoration",
+          "Scheduled maintenance listed": "Scheduled maintenance in progress – dropouts expected until maintenance window closes"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops at peak hours only (evenings/weekends)", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check router/firewall WAN event log – PPPoE session drops, interface flaps, auth failures", disruptive: false,
+        options: ["PPPoE session drops visible in logs", "Interface flapping visible in logs", "Authentication failures in logs", "No relevant events in logs", "Cannot access router logs"] },
+      { text: "Check physical cabling – NTD to router WAN port", disruptive: false,
+        options: ["All cables secure – no issues found", "Cable fault found – replaced, monitoring", "Cables reseated – monitoring"] },
+      { text: "Check DS/US LEDs – intermittent flashing or cycling indicates HFC signal instability", disruptive: false,
+        options: ["DS/US LEDs stable solid – OK", "DS/US LEDs intermittently flashing – signal unstable", "LEDs cycling – NTD rebooting repeatedly"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
+      { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true,
+        options: ["Power cycled – stable since", "Power cycled – briefly stable then dropped again", "Power cycled – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   },
   "FTTN/FTTB": {
     "No Internet": [
@@ -305,11 +414,17 @@ const stepsData = {
       { text: "Confirm modem has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed"] },
+        options: ["No outages listed", "Active outage confirmed"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – slow speeds attributed to active network outage"
+        }},
       { text: "Run speed test – record results", disruptive: false, fields: F.speed },
       { text: "Check DSL sync rate in modem admin – compare to expected rate for line length", disruptive: false, fields: F.dslSync },
       { text: "Test wired vs wireless", disruptive: false,
-        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
+        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"],
+        exits: {
+          "Wired OK, wireless slow – Wi-Fi issue": "Issue isolated to Wi-Fi – NBN connection performing correctly. Wi-Fi configuration or hardware issue on customer equipment"
+        }},
       { text: "Check for interference sources on the phone line", disruptive: false,
         options: ["No interference sources found", "Interfering device found and removed – improved"] },
       { text: "Reboot modem", disruptive: true,
@@ -324,14 +439,41 @@ const stepsData = {
       { text: "Inspect modem for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
       { text: "Raise fault with ISP – modem replacement required", disruptive: false, fields: F.fault }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm modem has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages or scheduled maintenance", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"],
+        exits: {
+          "Active outage confirmed": "Network outage confirmed – dropouts attributed to active outage. Monitor for restoration",
+          "Scheduled maintenance": "Scheduled maintenance in progress – dropouts expected until maintenance window closes"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops at peak hours only (evenings/weekends)", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check router/firewall WAN event log – PPPoE session drops, interface flaps, auth failures", disruptive: false,
+        options: ["PPPoE session drops visible in logs", "Interface flapping visible in logs", "Authentication failures in logs", "No relevant events in logs", "Cannot access router logs"] },
+      { text: "Check physical cabling – modem to router WAN port", disruptive: false,
+        options: ["All cables secure – no issues found", "Cable fault found – replaced, monitoring", "Cables reseated – monitoring"] },
+      { text: "Check DSL sync rate and stability in modem admin – note if sync rate is dropping or retraining", disruptive: false, fields: F.dslSync },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   },
   "LTE/4G": {
     "No Internet": [
       { text: "Confirm device has power – Power LED should be on", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known network outages in the area", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed in area", "Coverage issue in this location"] },
+        options: ["No outages listed", "Active outage confirmed in area", "Coverage issue in this location"],
+        exits: {
+          "Active outage confirmed in area": "Carrier network outage confirmed in area – no further troubleshooting required until outage clears",
+          "Coverage issue in this location": "Carrier coverage gap confirmed at this location – not a network fault. Coverage limitation at site, no fault action available"
+        }},
       { text: "Check signal LEDs / bars – low signal may require repositioning the device", disruptive: false, fields: F.signal },
       { text: "Relocate device to a higher position, near a window, or outside obstruction", disruptive: false,
         options: ["Repositioned – signal improved, internet connected", "Repositioned – signal improved, still no internet", "Repositioned – no improvement"] },
@@ -367,7 +509,11 @@ const stepsData = {
       { text: "Reboot device", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Check if data cap / fair use policy has been triggered", disruptive: false,
-        options: ["Data cap not triggered – OK", "Data cap reached – speeds throttled", "Fair use policy applied – shaping confirmed"] },
+        options: ["Data cap not triggered – OK", "Data cap reached – speeds throttled", "Fair use policy applied – shaping confirmed"],
+        exits: {
+          "Data cap reached – speeds throttled": "Data cap reached – service throttled per carrier fair use policy. Speeds will restore once data quota resets",
+          "Fair use policy applied – shaping confirmed": "Fair use policy active – carrier traffic shaping confirmed. Speeds will restore at next billing cycle reset"
+        }},
       { text: "Raise fault with ISP – provide speed test results and signal readings", disruptive: false, fields: F.faultCarrier }
     ],
     "No Power": [
@@ -378,14 +524,39 @@ const stepsData = {
       { text: "Inspect device for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
       { text: "Raise fault with ISP", disruptive: false, fields: F.faultCarrier }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm device has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages in the area", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Coverage issue in this location"],
+        exits: {
+          "Active outage confirmed in area": "Carrier network outage confirmed – dropouts attributed to active outage. Monitor for restoration",
+          "Coverage issue in this location": "Carrier coverage gap confirmed at this location – intermittent dropouts due to marginal signal. No fault action available"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops at peak hours only (evenings/weekends)", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check signal strength – marginal signal causes intermittent drops", disruptive: false, fields: F.signal },
+      { text: "Check physical cabling and device positioning", disruptive: false,
+        options: ["Device positioning OK – no change needed", "Device repositioned – signal improved, monitoring", "Cable issue found and resolved"] },
+      { text: "Reboot device", disruptive: true,
+        options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "Raise fault with ISP / carrier – provide dropout times and signal readings", disruptive: false, fields: F.faultCarrier }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   },
   "ADSL/VDSL": {
     "No Internet": [
       { text: "Confirm modem has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known carrier outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"],
+        exits: {
+          "Active outage confirmed": "Carrier network outage confirmed – no further troubleshooting required until outage clears",
+          "Scheduled maintenance": "Scheduled carrier maintenance in progress – restoration expected per carrier schedule"
+        }},
       { text: "Check DSL LED – solid = synced, flashing = training", disruptive: false,
         options: ["DSL LED solid – synced OK", "DSL LED flashing – training/not yet synced", "DSL LED off – no DSL signal"] },
       { text: "Ensure phone line / wall socket is active", disruptive: false,
@@ -397,7 +568,10 @@ const stepsData = {
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Test at the master / test socket to rule out internal wiring", disruptive: false,
-        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
+        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"],
+        exits: {
+          "Master socket test – works, internal wiring fault confirmed": "Internal property wiring fault confirmed – carrier/DSLAM side OK. Onsite investigation of internal cabling required"
+        }},
       { text: "Raise fault with ISP – provide sync speed and line stats", disruptive: false, fields: F.fault }
     ],
     "Packet Loss": [
@@ -424,20 +598,53 @@ const stepsData = {
       { text: "Check power adapter is correct for the modem", disruptive: false,
         options: ["Correct adapter – OK", "Wrong adapter found – correct adapter fitted"] },
       { text: "Raise fault with ISP – modem replacement", disruptive: false, fields: F.fault }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm modem has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages or scheduled maintenance", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"],
+        exits: {
+          "Active outage confirmed": "Network outage confirmed – dropouts attributed to active outage. Monitor for restoration",
+          "Scheduled maintenance": "Scheduled maintenance in progress – dropouts expected until maintenance window closes"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops at peak hours only (evenings/weekends)", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check router/firewall WAN event log – PPPoE session drops, interface flaps, auth failures", disruptive: false,
+        options: ["PPPoE session drops visible in logs", "Interface flapping visible in logs", "Authentication failures in logs", "No relevant events in logs", "Cannot access router logs"] },
+      { text: "Check physical cabling – modem to router WAN port", disruptive: false,
+        options: ["All cables secure – no issues found", "Cable fault found – replaced, monitoring", "Cables reseated – monitoring"] },
+      { text: "Check DSL sync rate in modem admin – fluctuating or retraining sync causes dropouts", disruptive: false, fields: F.dslSync },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   },
   "Satellite": {
     "No Internet": [
       { text: "Confirm indoor modem has power – check Power LED", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known Sky Muster / satellite outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed", "Satellite service degraded – known issue"] },
+        options: ["No outages listed", "Active outage confirmed", "Satellite service degraded – known issue"],
+        exits: {
+          "Active outage confirmed": "Satellite service outage confirmed – no further action required until service restores",
+          "Satellite service degraded – known issue": "Known satellite service degradation – ISP is aware and monitoring for restoration"
+        }},
       { text: "Check Satellite LED – solid = link established, flashing = acquiring signal", disruptive: false,
         options: ["Satellite LED solid – link established OK", "Satellite LED flashing – acquiring signal", "Satellite LED off – no satellite link"] },
       { text: "Check weather conditions – heavy rain and storms cause rain fade on satellite", disruptive: false,
-        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"] },
+        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"],
+        exits: {
+          "Heavy rain/storm present – rain fade likely cause": "Rain fade confirmed as likely cause – satellite signal attenuation due to weather. Service expected to restore when conditions clear"
+        }},
       { text: "Visually inspect dish from a safe vantage – must not be obstructed or physically moved", disruptive: false,
-        options: ["Dish clear – no obstruction or movement", "Obstruction found on dish – cleared", "Dish appears to have moved – technician required"] },
+        options: ["Dish clear – no obstruction or movement", "Obstruction found on dish – cleared", "Dish appears to have moved – technician required"],
+        exits: {
+          "Dish appears to have moved – technician required": "Satellite dish displacement confirmed – onsite technician required for dish realignment. Service will remain down until realignment is completed"
+        }},
       { text: "Check coaxial cable from outdoor dish to indoor modem", disruptive: false,
         options: ["Coax cable OK – no visible damage", "Cable damage or loose connector found – investigated"] },
       { text: "Power cycle indoor modem – unplug 60 sec, allow ~5 min to reacquire signal", disruptive: true,
@@ -448,7 +655,10 @@ const stepsData = {
     ],
     "Packet Loss": [
       { text: "Check weather – satellite signal is affected by rain fade and heavy cloud", disruptive: false,
-        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"] },
+        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"],
+        exits: {
+          "Heavy rain/storm present – rain fade likely cause": "Rain fade confirmed as likely cause of packet loss – weather-related signal attenuation. No fault action required; service should restore when weather clears"
+        }},
       { text: "Check Satellite LED for intermittent drops", disruptive: false,
         options: ["Satellite LED stable solid – OK", "Satellite LED intermittently flashing – signal unstable"] },
       { text: "Run continuous ping – note that satellite latency of ~600ms is normal", disruptive: false, fields: F.satPing },
@@ -474,7 +684,32 @@ const stepsData = {
       { text: "Inspect modem for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
       { text: "Raise fault with ISP – hardware replacement required", disruptive: false, fields: F.fault }
-    ]
+    ],
+    "Intermittent Dropouts": [
+      { text: "Confirm indoor modem has power and all LEDs appear normal", disruptive: false,
+        options: ["Power LED on, LEDs appear normal", "Power LED on, LEDs showing fault state", "Power LED off – no power"] },
+      { text: "Check for known outages or scheduled maintenance", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Satellite service degraded – known issue"],
+        exits: {
+          "Active outage confirmed": "Satellite service outage confirmed – dropouts attributed to active outage. Monitor for restoration",
+          "Satellite service degraded – known issue": "Known satellite service degradation – ISP is aware and monitoring for restoration"
+        }},
+      { text: "Identify dropout pattern – frequency, duration, and time of day", disruptive: false,
+        options: ["Drops every few minutes – continuous", "Drops correlate with weather events", "Random drops – no clear pattern", "Single extended outage – not recurring"] },
+      { text: "Check weather conditions – rain fade causes intermittent satellite signal loss", disruptive: false,
+        options: ["Weather clear – rain fade not expected", "Rain or heavy cloud present – rain fade likely"],
+        exits: { "Rain or heavy cloud present – rain fade likely": "Rain fade confirmed as likely cause of intermittent dropouts – weather-related signal attenuation. Service should restore when conditions clear" }},
+      { text: "Check Satellite LED stability – intermittent flashing indicates signal drops", disruptive: false,
+        options: ["Satellite LED stable solid – OK", "Satellite LED intermittently flashing – signal instability confirmed", "Satellite LED off – no satellite link"] },
+      { text: "Check coaxial cable from outdoor dish to indoor modem", disruptive: false,
+        options: ["Coax cable OK – no visible damage", "Cable damage or loose connector found – investigated"] },
+      { text: "Power cycle indoor modem – unplug 60 sec, allow ~5 min to reconnect", disruptive: true,
+        options: ["Power cycled – stable since", "Power cycled – dropped again shortly after", "Power cycled – no change"] },
+      { text: "Run continuous ping – note that ~600ms latency is normal for satellite", disruptive: false, fields: F.satPing },
+      { text: "Raise fault with ISP – provide dropout times and ping results", disruptive: false, fields: F.fault }
+    ],
+    "Wi-Fi Issues": WIFI_STEPS,
+    "VoIP Issues": VOIP_STEPS
   }
 };
 
@@ -1393,10 +1628,10 @@ function renderLightsTable() {
     row.forEach((cell, ci) => {
       const el = ri === 0 ? document.createElement('th') : document.createElement('td');
 
-      // Add LED dot for non-header, non-last (meaning) columns
+      // Add signal bars or LED dot for non-header, non-last (meaning) columns
       if (ri > 0 && ci < row.length - 1) {
-        const dot = makeLedDot(cell);
-        if (dot) el.appendChild(dot);
+        const indicator = makeSignalBars(cell) || makeLedDot(cell);
+        if (indicator) el.appendChild(indicator);
       }
       el.appendChild(document.createTextNode(cell));
       tr.appendChild(el);
@@ -1405,6 +1640,47 @@ function renderLightsTable() {
   });
 
   container.appendChild(table);
+}
+
+function makeSignalBars(status) {
+  const s = status.toLowerCase();
+  const barMatch = s.match(/(\d+)\s+bar/);
+  const isOff = s === 'off' || s.includes('no signal');
+  if (!barMatch && !isOff) return null;
+
+  const active = isOff ? 0 : parseInt(barMatch[1]);
+  const color = active >= 3 ? 'var(--success)'
+              : active === 2 ? 'var(--warning)'
+              : active === 1 ? 'var(--danger)'
+              : 'transparent';
+  const dim = 'var(--surface-3)';
+
+  // 4 bars: x position, height, y position (bottom-aligned in 14px canvas)
+  const bars = [
+    { x: 0,  h: 4,  y: 10 },
+    { x: 5,  h: 7,  y: 7  },
+    { x: 10, h: 10, y: 4  },
+    { x: 15, h: 13, y: 1  }
+  ];
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '22');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('viewBox', '0 0 22 14');
+  svg.style.cssText = 'display:inline-block;vertical-align:middle;margin-right:5px;flex-shrink:0;';
+
+  bars.forEach((bar, i) => {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', bar.x);
+    rect.setAttribute('y', bar.y);
+    rect.setAttribute('width', '4');
+    rect.setAttribute('height', bar.h);
+    rect.setAttribute('rx', '1');
+    rect.setAttribute('fill', i < active ? color : dim);
+    svg.appendChild(rect);
+  });
+
+  return svg;
 }
 
 function makeLedDot(status) {
