@@ -1191,6 +1191,7 @@ body.light .fault-detail-input::-webkit-calendar-picker-indicator { filter: none
   color: var(--text);
   line-height: 1.4;
 }
+.led-table td:not(:last-child) { white-space: nowrap; }
 .led-table tr:last-child td { border-bottom: none; }
 .led-table tr:hover td { background: var(--surface-2); }
 
