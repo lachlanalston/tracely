@@ -1812,9 +1812,12 @@ function stopTimer() {
 }
 
 function fmtTime(secs) {
-  const m = Math.floor(secs / 60).toString().padStart(2, '0');
-  const s = (secs % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
 // ================================================================
@@ -1824,17 +1827,15 @@ function fmtTime(secs) {
 function generateTicket() {
   if (!state.tech || !state.issue) return;
 
-  const now       = new Date();
-  const dateStr   = now.toLocaleDateString('en-AU');
-  const timeStr   = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
   const modelName = techInfo[state.tech] ? techInfo[state.tech][state.modelIndex].model : 'Unknown';
+
+  // ── Outcome ──
   let outcome;
   if (state.conclusion) {
     outcome = state.conclusion;
   } else if (state.resolved) {
     outcome = `Resolved – fixed at step ${state.resolvedAtStep + 1}`;
   } else {
-    // Check if a fault/carrier fault step was completed with a specific outcome field
     const faultStep = state.steps.find(s =>
       s.status === 'done' && s.fields &&
       s.fields.some(f => f.key === 'outcome') &&
@@ -1849,80 +1850,94 @@ function generateTicket() {
     }
   }
 
-  // Fault / session times
+  // ── Consistent date formatter (dd/mm/yyyy hh:mm am/pm) ──
+  const fmtDate = d => d.toLocaleString('en-AU', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
   let faultStartStr = '';
   if (state.faultStartTime) {
-    const fd = new Date(state.faultStartTime);
-    faultStartStr = fd.toLocaleString('en-AU', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+    faultStartStr = fmtDate(new Date(state.faultStartTime));
   }
-  const sessionStartStr = state.sessionStartTime
-    ? state.sessionStartTime.toLocaleString('en-AU', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      })
-    : timeStr;
+  const sessionStartStr = state.sessionStartTime ? fmtDate(state.sessionStartTime) : fmtDate(new Date());
 
-  // Build the chronological steps log with results inline
+  // ── Header fields — pad all labels to 24 chars for alignment ──
+  const pad = (label) => label.padEnd(24);
+  const clientLine    = state.clientName ? `\n${pad('Client:')}${state.clientName}` : '';
+  const siteLine      = state.siteName   ? `\n${pad('Site:')}${state.siteName}`     : '';
+  const faultLine     = faultStartStr    ? `\n${pad('Fault started:')}${faultStartStr}` : '';
+  const planSpeedLine = state.planSpeed  ? `\n${pad('Plan Speed:')}${state.planSpeed}`  : '';
+
+  // ── Steps log ──
+  // Find the index of the step that triggered a conclusion
+  let conclusionStepIndex = -1;
+  if (state.conclusion) {
+    conclusionStepIndex = state.steps.reduce((acc, s, i) => {
+      if (s.status === 'done' && s.exits && s.exits[s.result] === state.conclusion) return i;
+      return acc;
+    }, -1);
+  }
+
   let stepLog = '';
   let logNum = 0;
   state.steps.forEach((s, i) => {
-    if (!meetsCondition(s) && s.status !== 'done') return; // skip conditioned-out steps
-    if (s.status === 'pending' && state.resolved) return; // skip cancelled steps
+    if (!meetsCondition(s) && s.status !== 'done') return;
+    // Stop log at the conclusion step (inclusive)
+    if (state.conclusion && conclusionStepIndex >= 0 && i > conclusionStepIndex) return;
+    // Skip pending steps when session resolved normally
+    if (s.status === 'pending' && state.resolved) return;
     logNum++;
     const num    = String(logNum).padStart(2, ' ');
-    const flag   = s.disruptive ? ' [DISRUPTIVE]' : '';
     const marker = s.status === 'done' ? '✓' : s.status === 'skipped' ? '–' : '○';
-    stepLog += `  ${num}. ${marker} ${s.text}${flag}\n`;
-    if (s.result) {
-      stepLog += `        Result: ${s.result}\n`;
-    }
-    if (state.resolvedAtStep === i) {
-      stepLog += `        → Issue resolved here\n`;
-    }
+    stepLog += `  ${num}. ${marker} ${s.text}\n`;
+    if (s.disruptive) stepLog += `         ⚠ Disruptive step\n`;
+    if (s.result)     stepLog += `      Result: ${s.result}\n`;
+    if (state.resolvedAtStep === i) stepLog += `      → Issue resolved here\n`;
+    if (i === conclusionStepIndex)  stepLog += `      → Conclusion reached\n`;
   });
 
-  // Remaining steps (only when session not resolved)
+  // ── Remaining steps (only when no conclusion and not resolved) ──
   let remainingLog = '';
-  if (!state.resolved) {
+  if (!state.resolved && !state.conclusion) {
     const remaining = state.steps.filter(s =>
       meetsCondition(s) && (s.status === 'pending' || s.status === 'active')
     );
     if (remaining.length) {
       remainingLog = `\nREMAINING STEPS:\n` +
-        remaining.map((s, i) => {
-          const flag = s.disruptive ? ' [DISRUPTIVE]' : '';
-          return `  ${i + 1}. ${s.text}${flag}`;
+        remaining.map((s, idx) => {
+          const dis = s.disruptive ? '\n         ⚠ Disruptive step' : '';
+          return `  ${String(idx + 1).padStart(2, ' ')}. ${s.text}${dis}`;
         }).join('\n') + '\n';
     }
   }
 
   const completedCount = state.steps.filter(s => s.status === 'done').length;
-  const skippedCount   = state.steps.filter(s => s.status === 'skipped' && meetsCondition(s)).length;
+  // Only count skips that were intentional (met condition but status is skipped and not auto-concluded)
+  const skippedCount = state.steps.filter(s =>
+    s.status === 'skipped' && meetsCondition(s) &&
+    !(state.conclusion && conclusionStepIndex >= 0 && state.steps.indexOf(s) > conclusionStepIndex)
+  ).length;
+  const countStr = skippedCount > 0
+    ? `${completedCount} completed, ${skippedCount} skipped`
+    : `${completedCount} completed`;
 
-  const faultLine   = faultStartStr   ? `\nFault started: ${faultStartStr}` : '';
-  const sessionLine = `\nTroubleshooting started: ${sessionStartStr}`;
-
-  const clientLine    = state.clientName ? `\nClient:     ${state.clientName}` : '';
-  const siteLine      = state.siteName   ? `\nSite:       ${state.siteName}`   : '';
-  const planSpeedLine = state.planSpeed  ? `\nPlan Speed: ${state.planSpeed}`  : '';
+  const SEP = '──────────────────────────────────────';
 
   const ticket =
 `TROUBLESHOOTING SESSION
-──────────────────────────────────${clientLine}${siteLine}
-Date:       ${dateStr} ${timeStr}${faultLine}${sessionLine}
-Duration:   ${fmtTime(state.timerSeconds)}
-Technology: ${state.tech}${planSpeedLine}
-Device:     ${modelName}
-Issue:      ${state.issue}
-Outcome:    ${outcome}
-──────────────────────────────────
+${SEP}${clientLine}${siteLine}
+${pad('Troubleshooting started:')}${sessionStartStr}${faultLine}
+${pad('Duration:')}${fmtTime(state.timerSeconds)}
+${pad('Technology:')}${state.tech}${planSpeedLine}
+${pad('Device:')}${modelName}
+${pad('Issue:')}${state.issue}
+${pad('Outcome:')}${outcome}
+${SEP}
 
-STEPS LOG (${completedCount} completed, ${skippedCount} skipped):
+STEPS LOG (${countStr}):
 ${stepLog || '  No steps completed\n'}${remainingLog}
-──────────────────────────────────
+${SEP}
 Generated by Tracely`;
 
   document.getElementById('ticketPre').textContent = ticket;
