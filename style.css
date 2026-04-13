@@ -1036,3 +1036,48 @@ button { font-family: inherit; }
   .header-search { display: none; }
   .app-header { gap: 10px; padding: 0 14px; }
 }
+
+/* ================================================================
+   PRINT
+================================================================ */
+@media print {
+  body { overflow: auto; background: white; color: black; }
+
+  /* Release fixed/sticky layout so content flows naturally */
+  .app-header,
+  .mobile-tabs { position: relative; background: white; border-bottom: 1px solid #ccc; }
+
+  .app-layout {
+    position: relative;
+    display: block;
+    top: auto; left: auto; right: auto; bottom: auto;
+  }
+
+  .sidebar,
+  .equipment-panel {
+    display: block;
+    border: 1px solid #ccc;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+
+  .main-panel { overflow: visible; padding: 16px 0; }
+
+  /* Hide elements that add no value when printed */
+  .btn-icon,
+  .btn-reset,
+  .btn-done,
+  .btn-skip,
+  .btn-primary,
+  .session-timer,
+  .mobile-tabs,
+  .model-nav-bar button,
+  .lightbox,
+  .modal-backdrop { display: none !important; }
+
+  /* Force text visible regardless of colour vars */
+  .filter-item, .section-label, .step-text,
+  .model-title, .led-table td, .led-table th { color: black !important; }
+
+  .step-card { border: 1px solid #ccc; margin-bottom: 6px; page-break-inside: avoid; }
+}
