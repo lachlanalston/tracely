@@ -1,58 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Travely – Internet Troubleshooter</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travely – NBN Troubleshooter</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="dark">
 
-<div class="header">
-  <h1>Travely – Internet Troubleshooter</h1>
-  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark/Light</button>
-</div>
-
-<div class="container">
-
-  <!-- CENTER PANEL -->
-  <div class="center-panel">
-    <div>
-      <h2>Technology Type</h2>
-      <div id="techTypeGrid" class="card-grid"></div>
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      Travely
     </div>
-    <div>
-      <h2>Issue Type</h2>
-      <div id="issueTypeGrid" class="card-grid"></div>
+    <div class="header-search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="searchInput" type="text" placeholder="Search device or issue...">
     </div>
-    <div id="stepsContainer">
-      <h2>Troubleshooting Steps</h2>
-      <div class="checkbox-group" id="checkboxes"></div>
-      <button class="next-step" onclick="showNextStep()">Show Next Steps</button>
-      <div id="nextStepsOutput"></div>
+    <div class="header-actions">
+      <div class="session-timer" id="sessionTimer" hidden>00:00</div>
+      <button class="btn-icon" id="themeToggle" title="Toggle theme">
+        <svg id="themeIconDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg id="themeIconLight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" hidden>
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MOBILE TAB BAR -->
+  <nav class="mobile-tabs" role="tablist">
+    <button class="mobile-tab active" data-panel="sidebar" role="tab">Technology</button>
+    <button class="mobile-tab" data-panel="main" role="tab">Steps</button>
+    <button class="mobile-tab" data-panel="equipment" role="tab">Equipment</button>
+  </nav>
+
+  <!-- APP LAYOUT -->
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <p class="section-label">Technology Type</p>
+        <div class="filter-grid" id="techGrid"></div>
+      </div>
+      <div class="sidebar-section">
+        <p class="section-label">Issue Type</p>
+        <div class="filter-grid" id="issueGrid"></div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn-reset" id="resetBtn" hidden>Reset Session</button>
+      </div>
+    </aside>
+
+    <!-- MAIN PANEL -->
+    <main class="main-panel" id="mainPanel">
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h2>Start a troubleshooting session</h2>
+        <p>Select a technology type and issue from the sidebar to begin guided troubleshooting.</p>
+      </div>
+
+      <div class="session-view d-none" id="sessionView">
+        <div class="session-header">
+          <div class="session-badges">
+            <span class="badge badge-tech" id="sessionTechBadge"></span>
+            <span class="badge badge-issue" id="sessionIssueBadge"></span>
+          </div>
+          <div class="session-progress-wrap">
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <span class="progress-text" id="progressText">0 / 0 complete</span>
+          </div>
+        </div>
+
+        <div class="steps-list" id="stepsList"></div>
+
+        <div class="session-actions">
+          <button class="btn-primary" id="generateTicketBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            Generate Ticket Note
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- EQUIPMENT PANEL -->
+    <aside class="equipment-panel" id="equipmentPanel">
+
+      <div class="equipment-empty" id="equipmentEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <p>Select a technology type to view equipment reference</p>
+      </div>
+
+      <div class="equipment-view d-none" id="equipmentView">
+
+        <div class="model-nav-bar">
+          <button class="btn-icon btn-sm" id="prevModelBtn" title="Previous model">&#8592;</button>
+          <span class="model-title" id="modelTitle"></span>
+          <button class="btn-icon btn-sm" id="nextModelBtn" title="Next model">&#8594;</button>
+        </div>
+        <div class="model-index-label" id="modelIndex"></div>
+
+        <div class="image-tabs" id="imageTabs"></div>
+        <div class="equipment-image-wrap" id="equipmentImageWrap"></div>
+
+        <div class="info-tabs">
+          <button class="info-tab active" data-target="ledPanel">LED Status</button>
+          <button class="info-tab" data-target="portsPanel">Port Guide</button>
+        </div>
+        <div class="panel-content" id="ledPanel"></div>
+        <div class="panel-content d-none" id="portsPanel">
+          <p class="coming-soon-text">Port diagrams coming soon.<br>Add images to <code>images/&lt;tech&gt;/</code>.</p>
+        </div>
+
+      </div>
+    </aside>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox d-none" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&#x2715;</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <!-- TICKET NOTE MODAL -->
+  <div class="modal-backdrop d-none" id="ticketModalBackdrop">
+    <div class="modal" role="dialog" aria-labelledby="ticketModalTitle">
+      <div class="modal-header">
+        <h3 id="ticketModalTitle">Ticket Note</h3>
+        <button class="btn-icon btn-sm" id="closeModalBtn">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="ticket-pre" id="ticketPre"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="copyTicketBtn">Copy to Clipboard</button>
+      </div>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
-  <div class="right-panel">
-    <div id="equipmentImagesContainer" class="equipment-images-container"></div>
-    <div class="model-buttons">
-      <button onclick="showPreviousModel()">Previous Model</button>
-      <button onclick="showNextModel()">Next Model</button>
+  <!-- DISRUPTIVE STEP CONFIRM MODAL -->
+  <div class="modal-backdrop d-none" id="confirmModalBackdrop">
+    <div class="modal modal-sm" role="dialog" aria-labelledby="confirmModalTitle">
+      <div class="modal-header">
+        <h3 id="confirmModalTitle">Service Disruption Warning</h3>
+      </div>
+      <div class="modal-body">
+        <div class="warning-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <p id="confirmModalText"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="confirmCancelBtn">Cancel</button>
+        <button class="btn-danger" id="confirmProceedBtn">Proceed Anyway</button>
+      </div>
     </div>
-    <div id="lightsTableContainer" class="lights-table-container"></div>
-    <div id="serviceClassesContainer" class="service-classes-container"></div>
   </div>
 
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox" class="lightbox">
-  <span class="lightbox-close" onclick="closeLightbox()">×</span>
-  <img class="lightbox-content" id="lightbox-img">
-  <div id="lightbox-caption" class="lightbox-caption"></div>
-</div>
-
-<script src="scripts.js"></script>
+  <script src="scripts.js"></script>
 </body>
 </html>
