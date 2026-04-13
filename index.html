@@ -26,6 +26,12 @@
     </div>
     <div class="header-actions">
       <div class="session-timer" id="sessionTimer" hidden>00:00</div>
+      <button class="btn-icon" id="portGuideBtn" title="Port Reference">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
+          <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+        </svg>
+      </button>
       <button class="btn-icon" id="themeToggle" title="Toggle theme">
         <svg id="themeIconDark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="5"/>
@@ -222,6 +228,33 @@
         <button class="btn-secondary" id="confirmCancelBtn">Cancel</button>
         <button class="btn-danger" id="confirmProceedBtn">Proceed Anyway</button>
       </div>
+    </div>
+  </div>
+
+  <!-- PORT REFERENCE MODAL -->
+  <div class="modal-backdrop d-none" id="portModalBackdrop">
+    <div class="modal modal-port" role="dialog" aria-labelledby="portModalTitle">
+      <div class="modal-header">
+        <h3 id="portModalTitle">Port Reference</h3>
+        <button class="btn-icon btn-sm" id="closePortModalBtn">&#x2715;</button>
+      </div>
+      <div class="port-modal-filters">
+        <div class="port-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="portSearch" placeholder="Search port, protocol, or keyword…">
+        </div>
+        <div class="port-category-pills" id="portCategoryPills"></div>
+        <div class="port-direction-wrap">
+          <span class="port-filter-label">Direction</span>
+          <div class="port-direction-pills" id="portDirectionPills">
+            <button class="port-pill active" data-dir="All">All</button>
+            <button class="port-pill" data-dir="Inbound">Inbound</button>
+            <button class="port-pill" data-dir="Outbound">Outbound</button>
+            <button class="port-pill" data-dir="Both">Both</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body" id="portModalBody"></div>
     </div>
   </div>
 

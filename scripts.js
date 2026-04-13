@@ -1090,6 +1090,7 @@ function init() {
   bindButtons();
   bindKeyboard();
   initResizeHandle();
+  initPortModal();
 }
 
 // ================================================================
@@ -2135,6 +2136,7 @@ function bindKeyboard() {
       closeLightbox();
       hide('ticketModalBackdrop');
       hide('confirmModalBackdrop');
+      hide('portModalBackdrop');
       state.pendingStepIndex = null;
     }
   });
@@ -2146,6 +2148,243 @@ function bindKeyboard() {
 
 function show(id) { document.getElementById(id).classList.remove('d-none'); }
 function hide(id) { document.getElementById(id).classList.add('d-none'); }
+
+// ================================================================
+// PORT REFERENCE DATA
+// ================================================================
+
+const PORT_SECTIONS = [
+  {
+    id: 'infrastructure',
+    label: 'Infrastructure',
+    rows: [
+      { port: '53',        proto: 'TCP/UDP', dir: 'Both',     purpose: 'DNS name resolution',          note: '' },
+      { port: '67',        proto: 'UDP',     dir: 'Inbound',  purpose: 'DHCP server',                  note: '' },
+      { port: '68',        proto: 'UDP',     dir: 'Outbound', purpose: 'DHCP client',                  note: '' },
+      { port: '123',       proto: 'UDP',     dir: 'Outbound', purpose: 'NTP time sync',                note: '' },
+      { port: '80',        proto: 'TCP',     dir: 'Outbound', purpose: 'HTTP',                         note: '' },
+      { port: '443',       proto: 'TCP',     dir: 'Outbound', purpose: 'HTTPS',                        note: '' },
+      { port: 'ICMP',      proto: '—',       dir: 'Both',     purpose: 'Ping / traceroute',            note: '' },
+    ]
+  },
+  {
+    id: 'firewall',
+    label: 'Firewall Management',
+    rows: [
+      { port: '22',        proto: 'TCP',     dir: 'Inbound',  purpose: 'SSH management',               note: 'All vendors' },
+      { port: '23',        proto: 'TCP',     dir: 'Inbound',  purpose: 'Telnet (legacy)',               note: 'Cisco IOS' },
+      { port: '443',       proto: 'TCP',     dir: 'Inbound',  purpose: 'HTTPS management',             note: 'All vendors' },
+      { port: '49',        proto: 'TCP',     dir: 'Outbound', purpose: 'TACACS+ authentication',       note: 'Cisco, Fortinet' },
+      { port: '541',       proto: 'TCP',     dir: 'Outbound', purpose: 'FortiManager / FortiAnalyzer', note: 'Fortinet only' },
+      { port: '703/704',   proto: 'TCP/UDP', dir: 'Both',     purpose: 'HA heartbeat',                 note: 'Fortinet only' },
+      { port: '8000/8001', proto: 'TCP',     dir: 'Outbound', purpose: 'FSSO / FortiAuthenticator',    note: 'Fortinet only' },
+      { port: '161',       proto: 'UDP',     dir: 'Inbound',  purpose: 'SNMP polling',                 note: 'All vendors' },
+      { port: '162',       proto: 'UDP',     dir: 'Outbound', purpose: 'SNMP traps',                   note: 'All vendors' },
+      { port: '514',       proto: 'UDP',     dir: 'Outbound', purpose: 'Syslog',                       note: 'All vendors' },
+    ]
+  },
+  {
+    id: 'wireless',
+    label: 'Wireless Controller',
+    rows: [
+      { port: '443',       proto: 'TCP',     dir: 'Outbound', purpose: 'HTTPS / controller management', note: 'All vendors' },
+      { port: '8080',      proto: 'TCP',     dir: 'Outbound', purpose: 'AP inform to controller',        note: 'Ubiquiti UniFi' },
+      { port: '8443',      proto: 'TCP',     dir: 'Inbound',  purpose: 'UniFi controller HTTPS',         note: 'Ubiquiti UniFi' },
+      { port: '5246',      proto: 'UDP',     dir: 'Both',     purpose: 'CAPWAP control',                 note: 'FortiAP' },
+      { port: '5247',      proto: 'UDP',     dir: 'Both',     purpose: 'CAPWAP data',                    note: 'FortiAP' },
+      { port: '7351',      proto: 'UDP',     dir: 'Outbound', purpose: 'Cloud tunnel',                   note: 'Meraki only' },
+      { port: '3478',      proto: 'UDP',     dir: 'Outbound', purpose: 'STUN',                           note: 'Ubiquiti, Meraki' },
+      { port: '10001',     proto: 'UDP',     dir: 'Both',     purpose: 'Device discovery',               note: 'Ubiquiti only' },
+      { port: '1688',      proto: 'TCP',     dir: 'Both',     purpose: 'DECT inter-base sync',           note: 'Yealink multi-cell' },
+    ]
+  },
+  {
+    id: 'voip',
+    label: 'VoIP & Telephony',
+    rows: [
+      { port: '5060',          proto: 'TCP/UDP', dir: 'Both',     purpose: 'SIP signalling',             note: 'All, Yealink, 3CX' },
+      { port: '5061',          proto: 'TCP',     dir: 'Both',     purpose: 'SIP TLS (encrypted)',        note: 'All, Yealink, 3CX' },
+      { port: '5080',          proto: 'TCP/UDP', dir: 'Both',     purpose: 'SIP secondary / trunk',      note: '3CX' },
+      { port: '2000',          proto: 'TCP',     dir: 'Both',     purpose: 'SCCP (Skinny)',               note: 'Cisco phones' },
+      { port: '3478/3479',     proto: 'UDP',     dir: 'Outbound', purpose: 'STUN / TURN',                note: 'Yealink, Teams' },
+      { port: '5349',          proto: 'TCP/UDP', dir: 'Outbound', purpose: 'STUN / TURN over TLS',       note: 'Teams Direct Routing' },
+      { port: '9000',          proto: 'TCP',     dir: 'Outbound', purpose: '3CX management tunnel',      note: '3CX' },
+      { port: '5001',          proto: 'TCP',     dir: 'Outbound', purpose: '3CX tunnel',                 note: '3CX' },
+      { port: '389',           proto: 'TCP',     dir: 'Outbound', purpose: 'LDAP directory / phonebook', note: 'Yealink' },
+      { port: '10000–20000',   proto: 'UDP',     dir: 'Both',     purpose: 'RTP audio',                  note: 'All — range configurable' },
+    ]
+  },
+  {
+    id: 'vpn',
+    label: 'VPN',
+    rows: [
+      { port: '500',   proto: 'UDP', dir: 'Both', purpose: 'IKE phase 1 (IPSec)',  note: 'All vendors' },
+      { port: '4500',  proto: 'UDP', dir: 'Both', purpose: 'NAT-T IPSec',          note: 'All vendors' },
+      { port: '443',   proto: 'TCP', dir: 'Both', purpose: 'SSL VPN',              note: 'Fortinet, Cisco' },
+      { port: '10443', proto: 'TCP', dir: 'Both', purpose: 'SSL VPN alt port',     note: 'Fortinet' },
+      { port: '1194',  proto: 'UDP', dir: 'Both', purpose: 'OpenVPN',              note: 'Generic' },
+      { port: '51820', proto: 'UDP', dir: 'Both', purpose: 'WireGuard',            note: 'Generic' },
+      { port: '9350/9351', proto: 'UDP', dir: 'Both', purpose: 'AutoVPN',          note: 'Meraki MX' },
+    ]
+  },
+  {
+    id: 'netmgmt',
+    label: 'Network Management',
+    rows: [
+      { port: '161',  proto: 'UDP', dir: 'Inbound',  purpose: 'SNMP polling',         note: 'All vendors' },
+      { port: '162',  proto: 'UDP', dir: 'Outbound', purpose: 'SNMP traps',           note: 'All vendors' },
+      { port: '514',  proto: 'UDP', dir: 'Outbound', purpose: 'Syslog',               note: 'All vendors' },
+      { port: '1812', proto: 'UDP', dir: 'Both',     purpose: 'RADIUS authentication', note: 'All vendors' },
+      { port: '1813', proto: 'UDP', dir: 'Both',     purpose: 'RADIUS accounting',    note: 'All vendors' },
+      { port: '49',   proto: 'TCP', dir: 'Outbound', purpose: 'TACACS+',              note: 'Cisco, Fortinet' },
+      { port: '179',  proto: 'TCP', dir: 'Both',     purpose: 'BGP',                  note: 'Cisco, Fortinet' },
+      { port: '2055', proto: 'UDP', dir: 'Outbound', purpose: 'NetFlow / IPFIX',      note: 'Cisco, Fortinet' },
+    ]
+  },
+  {
+    id: 'provisioning',
+    label: 'Provisioning',
+    rows: [
+      { port: '69',  proto: 'UDP', dir: 'Outbound', purpose: 'TFTP',                note: 'Yealink, Cisco phones' },
+      { port: '21',  proto: 'TCP', dir: 'Outbound', purpose: 'FTP',                 note: 'Yealink' },
+      { port: '80',  proto: 'TCP', dir: 'Outbound', purpose: 'HTTP provisioning',   note: 'Yealink, APs' },
+      { port: '443', proto: 'TCP', dir: 'Outbound', purpose: 'HTTPS provisioning',  note: 'Yealink, APs' },
+    ]
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud Management',
+    rows: [
+      { port: '443',  proto: 'TCP', dir: 'Outbound', purpose: 'Dashboard / cloud platform',    note: 'All vendors' },
+      { port: '541',  proto: 'TCP', dir: 'Outbound', purpose: 'FortiManager / FortiAnalyzer',  note: 'Fortinet' },
+      { port: '7351', proto: 'UDP', dir: 'Outbound', purpose: 'Meraki cloud tunnel',            note: 'Meraki' },
+      { port: '8080', proto: 'TCP', dir: 'Outbound', purpose: 'UniFi device inform',            note: 'Ubiquiti' },
+      { port: '8443', proto: 'TCP', dir: 'Outbound', purpose: 'UniFi controller',               note: 'Ubiquiti' },
+      { port: '9443', proto: 'UDP', dir: 'Outbound', purpose: 'FortiGuard AV/IPS updates',      note: 'Fortinet' },
+    ]
+  },
+];
+
+// ================================================================
+// PORT REFERENCE RENDERING
+// ================================================================
+
+let portFilterCategory = 'All';
+let portFilterDir      = 'All';
+let portFilterSearch   = '';
+
+function initPortModal() {
+  // Build category pills
+  const pillsEl = document.getElementById('portCategoryPills');
+  const categories = ['All', ...PORT_SECTIONS.map(s => s.label)];
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'port-pill' + (cat === 'All' ? ' active' : '');
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      portFilterCategory = cat;
+      pillsEl.querySelectorAll('.port-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPortSections();
+    });
+    pillsEl.appendChild(btn);
+  });
+
+  // Direction pills
+  document.getElementById('portDirectionPills').addEventListener('click', e => {
+    const btn = e.target.closest('.port-pill');
+    if (!btn) return;
+    portFilterDir = btn.dataset.dir;
+    document.querySelectorAll('#portDirectionPills .port-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPortSections();
+  });
+
+  // Search
+  document.getElementById('portSearch').addEventListener('input', e => {
+    portFilterSearch = e.target.value.toLowerCase().trim();
+    renderPortSections();
+  });
+
+  // Close button
+  document.getElementById('closePortModalBtn').addEventListener('click', () => hide('portModalBackdrop'));
+  document.getElementById('portModalBackdrop').addEventListener('click', e => {
+    if (e.target === document.getElementById('portModalBackdrop')) hide('portModalBackdrop');
+  });
+
+  // Header button
+  document.getElementById('portGuideBtn').addEventListener('click', () => {
+    renderPortSections();
+    show('portModalBackdrop');
+  });
+
+  renderPortSections();
+}
+
+function renderPortSections() {
+  const body = document.getElementById('portModalBody');
+  body.innerHTML = '';
+  let anyVisible = false;
+
+  PORT_SECTIONS.forEach(section => {
+    // Category filter
+    if (portFilterCategory !== 'All' && portFilterCategory !== section.label) return;
+
+    // Filter rows
+    const rows = section.rows.filter(row => {
+      if (portFilterDir !== 'All' && row.dir !== portFilterDir) return false;
+      if (portFilterSearch) {
+        const haystack = `${row.port} ${row.proto} ${row.dir} ${row.purpose} ${row.note}`.toLowerCase();
+        if (!haystack.includes(portFilterSearch)) return false;
+      }
+      return true;
+    });
+
+    if (!rows.length) return;
+    anyVisible = true;
+
+    const section_el = document.createElement('div');
+    section_el.className = 'port-section';
+
+    const heading = document.createElement('div');
+    heading.className = 'port-section-heading';
+    heading.textContent = section.label;
+    section_el.appendChild(heading);
+
+    const table = document.createElement('table');
+    table.className = 'port-table';
+
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr>
+      <th>Port</th><th>Proto</th><th>Direction</th><th>Purpose</th><th>Vendor note</th>
+    </tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const dirClass = row.dir === 'Inbound' ? 'dir-in' : row.dir === 'Outbound' ? 'dir-out' : 'dir-both';
+      tr.innerHTML = `
+        <td class="port-num">${row.port}</td>
+        <td class="port-proto">${row.proto}</td>
+        <td><span class="port-dir ${dirClass}">${row.dir}</span></td>
+        <td class="port-purpose">${row.purpose}</td>
+        <td class="port-note">${row.note}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    section_el.appendChild(table);
+    body.appendChild(section_el);
+  });
+
+  if (!anyVisible) {
+    const empty = document.createElement('div');
+    empty.className = 'port-empty';
+    empty.textContent = 'No ports match your search.';
+    body.appendChild(empty);
+  }
+}
 
 // ================================================================
 // BOOT
