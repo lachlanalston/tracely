@@ -93,7 +93,16 @@
           </div>
         </div>
 
-        <div class="fault-details-card d-none" id="faultDetailsCard"></div>
+        <div class="fault-details-card d-none" id="faultDetailsCard">
+          <div class="fault-detail-item">
+            <label class="fault-detail-label" for="faultStartInput">Fault reported</label>
+            <input type="datetime-local" id="faultStartInput" class="fault-detail-input">
+          </div>
+          <div class="fault-detail-item">
+            <div class="fault-detail-label">Troubleshooting started</div>
+            <div class="fault-detail-value" id="sessionStartDisplay">—</div>
+          </div>
+        </div>
 
         <div class="steps-list" id="stepsList"></div>
 
