@@ -7,236 +7,410 @@
 const stepsData = {
   "FTTP": {
     "No Internet": [
-      { text: "Confirm NTD has power – Power LED should be solid green", disruptive: false },
-      { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false },
-      { text: "Check PON LED – solid green = synced, flashing = connecting, off = no fibre signal", disruptive: false },
-      { text: "Check LOS LED – if red, there is a fibre fault (cut, bend, dirty connector)", disruptive: false },
-      { text: "Confirm Ethernet cable is in the UNI-D 1 port on the NTD", disruptive: false },
-      { text: "Check Ethernet cable from NTD UNI-D port to router WAN port", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Test with laptop directly on UNI-D 1 port to bypass router", disruptive: false },
-      { text: "Power cycle NTD – unplug 30 sec, allow ~2 min to reconnect", disruptive: true },
-      { text: "Raise fault with ISP – provide NTD serial number and LED status", disruptive: false },
-      { text: "Escalate to NBN onsite visit", disruptive: false }
+      { text: "Confirm NTD has power – Power LED should be solid green", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
+      { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"] },
+      { text: "Check PON LED – solid green = synced, flashing = connecting, off = no fibre signal", disruptive: false,
+        options: ["PON LED solid green – synced OK", "PON LED flashing – still connecting", "PON LED off – no fibre signal"] },
+      { text: "Check LOS LED – if red, there is a fibre fault (cut, bend, dirty connector)", disruptive: false,
+        options: ["LOS LED off – no fault", "LOS LED red – fibre fault indicated"] },
+      { text: "Confirm Ethernet cable is in the UNI-D 1 port on the NTD", disruptive: false,
+        options: ["Cable in UNI-D 1 – confirmed", "Cable was in wrong port – moved to UNI-D 1", "Cable was unplugged – reseated"] },
+      { text: "Check Ethernet cable from NTD UNI-D port to router WAN port", disruptive: false,
+        options: ["Cable seated at both ends – OK", "Cable replaced – fault resolved", "Cable replaced – no change"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly connected then dropped"] },
+      { text: "Test with laptop directly on UNI-D 1 port to bypass router", disruptive: false,
+        options: ["Laptop gets internet – router confirmed faulty", "Laptop gets IP but no internet – NTD/line issue", "Laptop no IP – NTD fault"] },
+      { text: "Power cycle NTD – unplug 30 sec, allow ~2 min to reconnect", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved", "Power cycled – connecting but no internet"] },
+      { text: "Raise fault with ISP – provide NTD serial number and LED status", disruptive: false,
+        options: ["Fault raised with ISP – ref: ___", "ISP confirmed network fault in area", "ISP advising onsite required"] },
+      { text: "Escalate to NBN onsite visit", disruptive: false,
+        options: ["Onsite visit booked", "Escalation submitted – pending scheduling"] }
     ],
     "Packet Loss": [
-      { text: "Confirm NTD has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Check all Ethernet cabling – NTD to router, router to device", disruptive: false },
-      { text: "Run continuous ping to 8.8.8.8 – note pattern and loss percentage", disruptive: false },
-      { text: "Check PON LED for instability – intermittent flashing may indicate a fibre issue", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Test with laptop directly on UNI-D port to isolate router", disruptive: false },
-      { text: "Raise fault with ISP – provide ping test results", disruptive: false },
-      { text: "Escalate to NBN onsite – possible fibre degradation", disruptive: false }
+      { text: "Confirm NTD has power", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance listed"] },
+      { text: "Check all Ethernet cabling – NTD to router, router to device", disruptive: false,
+        options: ["All cables secure – OK", "Cable fault found and replaced", "Cables reseated – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 – note pattern and loss percentage", disruptive: false,
+        options: ["0% loss – stable", "1–5% loss – minor intermittent", "5–20% loss – significant", "20%+ loss – severe", "100% loss – no connectivity", "Intermittent drops then recovers"] },
+      { text: "Check PON LED for instability – intermittent flashing may indicate a fibre issue", disruptive: false,
+        options: ["PON LED stable solid green", "PON LED intermittent flashing – unstable", "PON LED off – no fibre"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly improved then dropped"] },
+      { text: "Test with laptop directly on UNI-D port to isolate router", disruptive: false,
+        options: ["Laptop: same loss – not the router", "Laptop: no loss – router at fault", "Laptop: also losing packets – line/NTD issue"] },
+      { text: "Raise fault with ISP – provide ping test results", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP confirmed investigating"] },
+      { text: "Escalate to NBN onsite – possible fibre degradation", disruptive: false,
+        options: ["Onsite booked", "Escalation submitted"] }
     ],
     "Slow Internet": [
-      { text: "Confirm NTD has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false },
-      { text: "Test wired vs wireless – isolate whether issue is Wi-Fi", disruptive: false },
-      { text: "Check for background traffic (streaming, cloud backup, Windows updates)", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Test with laptop directly on UNI-D port", disruptive: false },
-      { text: "Confirm service plan – check expected vs actual speeds", disruptive: false },
-      { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false }
+      { text: "Confirm NTD has power", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed"] },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at or near plan speed – OK", "Results significantly below plan speed"] },
+      { text: "Test wired vs wireless – isolate whether issue is Wi-Fi", disruptive: false,
+        options: ["Wired OK, wireless slow – Wi-Fi issue confirmed", "Both wired and wireless slow – not Wi-Fi", "Wired not possible – wireless only tested"] },
+      { text: "Check for background traffic (streaming, cloud backup, Windows updates)", disruptive: false,
+        options: ["Background traffic found and paused – speeds improved", "No background traffic found", "Updates running – paused and retested"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Test with laptop directly on UNI-D port", disruptive: false,
+        options: ["Laptop speed OK – router confirmed faulty", "Laptop also slow – line/ISP issue"] },
+      { text: "Confirm service plan – check expected vs actual speeds", disruptive: false,
+        options: ["Plan: ___ Mbps – actual within acceptable range", "Plan speed vs actual speed mismatch confirmed"] },
+      { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP reviewing line performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live – test with another device", disruptive: false },
-      { text: "Check power cable is firmly connected to the NTD", disruptive: false },
-      { text: "Try an alternative power cable if available", disruptive: false },
-      { text: "Check UPS or power board if in use", disruptive: false },
-      { text: "Inspect NTD for physical damage or burn marks", disruptive: false },
-      { text: "Raise fault with ISP – NTD likely needs replacement", disruptive: false }
+      { text: "Check power outlet is live – test with another device", disruptive: false,
+        options: ["Outlet live – confirmed with test device", "Outlet dead – switched to another outlet", "Outlet on switched board – board was off"] },
+      { text: "Check power cable is firmly connected to the NTD", disruptive: false,
+        options: ["Cable secure at both ends – OK", "Cable was loose – reseated, no change", "Cable was loose – reseated, power restored"] },
+      { text: "Try an alternative power cable if available", disruptive: false,
+        options: ["Alt cable tried – still no power", "Alt cable – power restored"] },
+      { text: "Check UPS or power board if in use", disruptive: false,
+        options: ["UPS/power board OK – not the cause", "UPS fault found – device bypassed directly to wall"] },
+      { text: "Inspect NTD for physical damage or burn marks", disruptive: false,
+        options: ["No visible damage", "Physical damage or burn marks found – replacement required"] },
+      { text: "Raise fault with ISP – NTD likely needs replacement", disruptive: false,
+        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
     ]
   },
   "HFC": {
     "No Internet": [
-      { text: "Confirm NTD has power – Power LED should be on", disruptive: false },
-      { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false },
-      { text: "Check DS (Downstream) LED – should be solid, not flashing", disruptive: false },
-      { text: "Check US (Upstream) LED – should be solid", disruptive: false },
-      { text: "Check Online LED – solid = registered and connected", disruptive: false },
-      { text: "Check coaxial cable from wall plate to NTD – hand-tighten both ends", disruptive: false },
-      { text: "Check Ethernet cable from NTD to router WAN port", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true },
-      { text: "Request loopback test from ISP", disruptive: true },
-      { text: "Request port reset from ISP / NBN", disruptive: true },
-      { text: "Raise fault with ISP – provide LED status and NTD serial", disruptive: false },
-      { text: "Escalate to NBN onsite visit", disruptive: false }
+      { text: "Confirm NTD has power – Power LED should be on", disruptive: false,
+        options: ["Power LED on – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
+      { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"] },
+      { text: "Check DS (Downstream) LED – should be solid, not flashing", disruptive: false,
+        options: ["DS LED solid – OK", "DS LED flashing – acquiring downstream", "DS LED off – no downstream signal"] },
+      { text: "Check US (Upstream) LED – should be solid", disruptive: false,
+        options: ["US LED solid – OK", "US LED flashing – not registered upstream", "US LED off"] },
+      { text: "Check Online LED – solid = registered and connected", disruptive: false,
+        options: ["Online LED solid – registered OK", "Online LED flashing – registering", "Online LED off – not registered"] },
+      { text: "Check coaxial cable from wall plate to NTD – hand-tighten both ends", disruptive: false,
+        options: ["Coax cable secure – OK", "Coax was loose – tightened, no change", "Coax was loose – tightened, resolved"] },
+      { text: "Check Ethernet cable from NTD to router WAN port", disruptive: false,
+        options: ["Ethernet cable secure – OK", "Cable replaced – no change", "Cable replaced – resolved"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly connected then dropped"] },
+      { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved", "Power cycled – DS/US LEDs recovered, still no internet"] },
+      { text: "Request loopback test from ISP", disruptive: true,
+        options: ["Loopback test passed – fault not confirmed at ISP end", "Loopback test failed – ISP confirmed fault"] },
+      { text: "Request port reset from ISP / NBN", disruptive: true,
+        options: ["Port reset performed – no change", "Port reset performed – resolved"] },
+      { text: "Raise fault with ISP – provide LED status and NTD serial", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP confirmed network issue", "ISP advising onsite required"] },
+      { text: "Escalate to NBN onsite visit", disruptive: false,
+        options: ["Onsite visit booked", "Escalation submitted – pending scheduling"] }
     ],
     "Packet Loss": [
-      { text: "Confirm NTD has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Inspect coaxial cable for damage, kinks, or corrosion", disruptive: false },
-      { text: "Check DS/US LEDs – intermittent flashing indicates signal instability", disruptive: false },
-      { text: "Check for coax splitters – remove if possible, run direct to NTD", disruptive: false },
-      { text: "Run continuous ping to 8.8.8.8 and record results", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Power cycle NTD", disruptive: true },
-      { text: "Raise fault with ISP – HFC signal quality check required", disruptive: false },
-      { text: "Escalate to onsite – check coax splitters and wall plate quality", disruptive: false }
+      { text: "Confirm NTD has power", disruptive: false,
+        options: ["Power LED on – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+      { text: "Inspect coaxial cable for damage, kinks, or corrosion", disruptive: false,
+        options: ["Coax cable OK – no visible damage", "Kink or damage found – cable replaced", "Corrosion found at connector – cleaned/replaced"] },
+      { text: "Check DS/US LEDs – intermittent flashing indicates signal instability", disruptive: false,
+        options: ["DS/US LEDs stable solid – OK", "DS/US LEDs intermittently flashing – signal unstable"] },
+      { text: "Check for coax splitters – remove if possible, run direct to NTD", disruptive: false,
+        options: ["No splitters present", "Splitter removed – direct connection now – improved", "Splitter removed – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 and record results", disruptive: false,
+        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent drops then recovers"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly improved then dropped"] },
+      { text: "Power cycle NTD", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved"] },
+      { text: "Raise fault with ISP – HFC signal quality check required", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP flagging for HFC signal investigation"] },
+      { text: "Escalate to onsite – check coax splitters and wall plate quality", disruptive: false,
+        options: ["Onsite booked", "Escalation submitted"] }
     ],
     "Slow Internet": [
-      { text: "Confirm NTD has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false },
-      { text: "Test wired vs wireless to isolate the issue", disruptive: false },
-      { text: "Check for background traffic", disruptive: false },
-      { text: "Check coaxial cable and connectors for damage", disruptive: false },
-      { text: "Reboot router", disruptive: true },
-      { text: "Power cycle NTD", disruptive: true },
-      { text: "Raise fault with ISP – provide speed test results", disruptive: false }
+      { text: "Confirm NTD has power", disruptive: false,
+        options: ["Power LED on – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed"] },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at or near plan speed – OK", "Results significantly below plan speed"] },
+      { text: "Test wired vs wireless to isolate the issue", disruptive: false,
+        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
+      { text: "Check for background traffic", disruptive: false,
+        options: ["Background traffic found and stopped – improved", "No background traffic found"] },
+      { text: "Check coaxial cable and connectors for damage", disruptive: false,
+        options: ["Coax OK – no damage", "Cable damage found – replaced"] },
+      { text: "Reboot router", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Power cycle NTD", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved"] },
+      { text: "Raise fault with ISP – provide speed test results", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP reviewing HFC performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live", disruptive: false },
-      { text: "Check power cable is secured to NTD", disruptive: false },
-      { text: "Check battery backup unit (BBU) if present – may need a charge or replacement", disruptive: false },
-      { text: "Inspect NTD for physical damage", disruptive: false },
-      { text: "Raise fault with ISP – NTD replacement likely", disruptive: false }
+      { text: "Check power outlet is live", disruptive: false,
+        options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
+      { text: "Check power cable is secured to NTD", disruptive: false,
+        options: ["Cable secure – OK", "Cable reseated – power restored", "Cable reseated – no change"] },
+      { text: "Check battery backup unit (BBU) if present – may need a charge or replacement", disruptive: false,
+        options: ["No BBU present", "BBU present – charged and OK", "BBU fault – bypassed, NTD powered directly"] },
+      { text: "Inspect NTD for physical damage", disruptive: false,
+        options: ["No visible damage", "Physical damage found – replacement required"] },
+      { text: "Raise fault with ISP – NTD replacement likely", disruptive: false,
+        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
     ]
   },
   "FTTN/FTTB": {
     "No Internet": [
-      { text: "Confirm modem has power – Power LED should be solid green", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Check DSL LED – solid = synced, flashing = training, off = no signal", disruptive: false },
-      { text: "Check phone line / wall socket is active", disruptive: false },
-      { text: "Remove any inline phone filters or splitters – DSL uses the full line", disruptive: false },
-      { text: "Try a different phone cable from wall to modem", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Test at the master socket / test socket (remove wall plate faceplate) to rule out internal wiring", disruptive: false },
-      { text: "Raise fault with ISP – provide DSL sync speed and attenuation if accessible in modem admin", disruptive: false },
-      { text: "Escalate to onsite", disruptive: false }
+      { text: "Confirm modem has power – Power LED should be solid green", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+      { text: "Check DSL LED – solid = synced, flashing = training, off = no signal", disruptive: false,
+        options: ["DSL LED solid green – synced OK", "DSL LED flashing – training/not yet synced", "DSL LED off – no DSL signal"] },
+      { text: "Check phone line / wall socket is active", disruptive: false,
+        options: ["Wall socket active – confirmed with another device", "Wall socket dead – no dial tone"] },
+      { text: "Remove any inline phone filters or splitters – DSL uses the full line", disruptive: false,
+        options: ["No filters/splitters present", "Filter removed – DSL synced", "Filter removed – no change"] },
+      { text: "Try a different phone cable from wall to modem", disruptive: false,
+        options: ["New cable – no change", "New cable – DSL synced, issue resolved"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – DSL synced but still no internet"] },
+      { text: "Test at the master socket / test socket (remove wall plate faceplate) to rule out internal wiring", disruptive: false,
+        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
+      { text: "Raise fault with ISP – provide DSL sync speed and attenuation if accessible in modem admin", disruptive: false,
+        options: ["Fault raised – sync: ___ Mbps, attenuation: ___ dB – ref: ___", "Fault raised – ref: ___", "ISP confirmed node issue"] },
+      { text: "Escalate to onsite", disruptive: false,
+        options: ["Onsite booked", "Escalation submitted"] }
     ],
     "Packet Loss": [
-      { text: "Confirm modem has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Check DSL sync rate in modem admin page (192.168.0.1 or 192.168.1.1)", disruptive: false },
-      { text: "Inspect phone cabling condition – damaged wire causes DSL instability", disruptive: false },
-      { text: "Check for DECT phones, alarm systems, or other devices on the line causing interference", disruptive: false },
-      { text: "Run continuous ping and record loss pattern", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Raise fault with ISP – provide sync rates and SNR margin", disruptive: false }
+      { text: "Confirm modem has power", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed"] },
+      { text: "Check DSL sync rate in modem admin page (192.168.0.1 or 192.168.1.1)", disruptive: false,
+        options: ["Sync rate: ___ Mbps / SNR: ___ dB – stable", "Sync rate fluctuating – unstable line", "Cannot access modem admin"] },
+      { text: "Inspect phone cabling condition – damaged wire causes DSL instability", disruptive: false,
+        options: ["Cabling OK – no visible damage", "Damaged/frayed cable found – replaced"] },
+      { text: "Check for DECT phones, alarm systems, or other devices on the line causing interference", disruptive: false,
+        options: ["No interfering devices found", "DECT phone/alarm removed – improved", "DECT phone/alarm removed – no change"] },
+      { text: "Run continuous ping and record loss pattern", disruptive: false,
+        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent bursts of loss"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Raise fault with ISP – provide sync rates and SNR margin", disruptive: false,
+        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
     ],
     "Slow Internet": [
-      { text: "Confirm modem has power", disruptive: false },
-      { text: "Check for known NBN outages", disruptive: false },
-      { text: "Run speed test – record results", disruptive: false },
-      { text: "Check DSL sync rate in modem admin – compare to expected rate for line length", disruptive: false },
-      { text: "Test wired vs wireless", disruptive: false },
-      { text: "Check for interference sources on the phone line", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Raise fault with ISP – provide sync stats and speed test results", disruptive: false }
+      { text: "Confirm modem has power", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power"] },
+      { text: "Check for known NBN outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed"] },
+      { text: "Run speed test – record results", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at expected rate for line length – OK", "Results below expected – fault likely"] },
+      { text: "Check DSL sync rate in modem admin – compare to expected rate for line length", disruptive: false,
+        options: ["Sync rate: ___ Mbps – within expected range", "Sync rate: ___ Mbps – below expected for line length"] },
+      { text: "Test wired vs wireless", disruptive: false,
+        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
+      { text: "Check for interference sources on the phone line", disruptive: false,
+        options: ["No interference sources found", "Interfering device found and removed – improved"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Raise fault with ISP – provide sync stats and speed test results", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP reviewing DSL line performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live", disruptive: false },
-      { text: "Confirm power adapter voltage matches modem label", disruptive: false },
-      { text: "Inspect modem for physical damage", disruptive: false },
-      { text: "Raise fault with ISP – modem replacement required", disruptive: false }
+      { text: "Check power outlet is live", disruptive: false,
+        options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
+      { text: "Confirm power adapter voltage matches modem label", disruptive: false,
+        options: ["Adapter voltage matches – OK", "Wrong adapter found – correct adapter fitted"] },
+      { text: "Inspect modem for physical damage", disruptive: false,
+        options: ["No visible damage", "Physical damage found – replacement required"] },
+      { text: "Raise fault with ISP – modem replacement required", disruptive: false,
+        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
     ]
   },
   "LTE/4G": {
     "No Internet": [
-      { text: "Confirm device has power – Power LED should be on", disruptive: false },
-      { text: "Check for known network outages in the area", disruptive: false },
-      { text: "Check signal LEDs / bars – low signal may require repositioning the device", disruptive: false },
-      { text: "Relocate device to a higher position, near a window, or outside obstruction", disruptive: false },
-      { text: "Check SIM card is seated correctly (if accessible)", disruptive: false },
-      { text: "Reboot device", disruptive: true },
-      { text: "Confirm APN settings are correct for the carrier", disruptive: false },
-      { text: "Check if device is locked to a specific band – try auto band selection", disruptive: false },
-      { text: "Raise fault with ISP / carrier – provide signal strength and IMEI", disruptive: false }
+      { text: "Confirm device has power – Power LED should be on", disruptive: false,
+        options: ["Power LED on – OK", "Power LED off – no power"] },
+      { text: "Check for known network outages in the area", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed in area", "Coverage issue in this location"] },
+      { text: "Check signal LEDs / bars – low signal may require repositioning the device", disruptive: false,
+        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal", "No signal – 0 bars"] },
+      { text: "Relocate device to a higher position, near a window, or outside obstruction", disruptive: false,
+        options: ["Repositioned – signal improved, internet connected", "Repositioned – signal improved, still no internet", "Repositioned – no improvement"] },
+      { text: "Check SIM card is seated correctly (if accessible)", disruptive: false,
+        options: ["SIM seated correctly – OK", "SIM was loose – reseated, improved", "SIM not detected – reseated, retrying"] },
+      { text: "Reboot device", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – signal recovered but no internet"] },
+      { text: "Confirm APN settings are correct for the carrier", disruptive: false,
+        options: ["APN settings correct – confirmed", "APN incorrect – corrected, resolved", "APN corrected – no change"] },
+      { text: "Check if device is locked to a specific band – try auto band selection", disruptive: false,
+        options: ["Band auto-selection set – improved", "Band was locked – unlocked, resolved", "Band auto-selection – no change"] },
+      { text: "Raise fault with ISP / carrier – provide signal strength and IMEI", disruptive: false,
+        options: ["Fault raised – IMEI: ___, signal: ___ dBm – ref: ___", "Fault raised – ref: ___", "Carrier confirmed coverage issue"] }
     ],
     "Packet Loss": [
-      { text: "Check signal strength – low or marginal signal causes packet loss", disruptive: false },
-      { text: "Check for local network congestion (peak evening hours)", disruptive: false },
-      { text: "Check for physical obstructions, metallic surfaces, or interference sources nearby", disruptive: false },
-      { text: "Reposition device for better signal", disruptive: false },
-      { text: "Reboot device", disruptive: true },
-      { text: "Raise fault with ISP – provide signal strength readings", disruptive: false }
+      { text: "Check signal strength – low or marginal signal causes packet loss", disruptive: false,
+        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal", "Signal weak – likely cause"] },
+      { text: "Check for local network congestion (peak evening hours)", disruptive: false,
+        options: ["Peak hours – congestion likely", "Off-peak – congestion unlikely", "Congestion confirmed by carrier"] },
+      { text: "Check for physical obstructions, metallic surfaces, or interference sources nearby", disruptive: false,
+        options: ["No obstructions or interference sources found", "Obstruction identified and addressed – improved"] },
+      { text: "Reposition device for better signal", disruptive: false,
+        options: ["Repositioned – signal improved, loss reduced", "Repositioned – no significant improvement"] },
+      { text: "Reboot device", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Raise fault with ISP – provide signal strength readings", disruptive: false,
+        options: ["Fault raised – signal: ___ dBm – ref: ___", "Fault raised – ref: ___"] }
     ],
     "Slow Internet": [
-      { text: "Check signal strength – low signal reduces throughput significantly", disruptive: false },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false },
-      { text: "Check for network congestion at current time", disruptive: false },
-      { text: "Reposition device for better signal", disruptive: false },
-      { text: "Reboot device", disruptive: true },
-      { text: "Check if data cap / fair use policy has been triggered", disruptive: false },
-      { text: "Raise fault with ISP – provide speed test results and signal readings", disruptive: false }
+      { text: "Check signal strength – low signal reduces throughput significantly", disruptive: false,
+        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal – likely cause", "No signal – 0 bars"] },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at expected 4G speeds – OK", "Results significantly below expected 4G speeds"] },
+      { text: "Check for network congestion at current time", disruptive: false,
+        options: ["Peak hours – congestion expected", "Off-peak – congestion not expected", "Carrier confirmed congestion in area"] },
+      { text: "Reposition device for better signal", disruptive: false,
+        options: ["Repositioned – speeds improved", "Repositioned – no improvement"] },
+      { text: "Reboot device", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Check if data cap / fair use policy has been triggered", disruptive: false,
+        options: ["Data cap not triggered – OK", "Data cap reached – speeds throttled", "Fair use policy applied – shaping confirmed"] },
+      { text: "Raise fault with ISP – provide speed test results and signal readings", disruptive: false,
+        options: ["Fault raised – ref: ___", "Carrier reviewing tower performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live", disruptive: false },
-      { text: "Check power cable is secured to device", disruptive: false },
-      { text: "Inspect device for physical damage", disruptive: false },
-      { text: "Raise fault with ISP", disruptive: false }
+      { text: "Check power outlet is live", disruptive: false,
+        options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
+      { text: "Check power cable is secured to device", disruptive: false,
+        options: ["Cable secure – OK", "Cable reseated – power restored", "Cable reseated – no change"] },
+      { text: "Inspect device for physical damage", disruptive: false,
+        options: ["No visible damage", "Physical damage found – replacement required"] },
+      { text: "Raise fault with ISP", disruptive: false,
+        options: ["Fault raised – ref: ___", "Replacement arranged"] }
     ]
   },
   "ADSL/VDSL": {
     "No Internet": [
-      { text: "Confirm modem has power", disruptive: false },
-      { text: "Check for known carrier outages", disruptive: false },
-      { text: "Check DSL LED – solid = synced, flashing = training", disruptive: false },
-      { text: "Ensure phone line / wall socket is active", disruptive: false },
-      { text: "Remove or bypass any inline phone filters or splitters", disruptive: false },
-      { text: "Try a different phone cable from wall to modem", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Test at the master / test socket to rule out internal wiring", disruptive: false },
-      { text: "Raise fault with ISP – provide sync speed and line stats", disruptive: false }
+      { text: "Confirm modem has power", disruptive: false,
+        options: ["Power LED solid green – OK", "Power LED off – no power"] },
+      { text: "Check for known carrier outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+      { text: "Check DSL LED – solid = synced, flashing = training", disruptive: false,
+        options: ["DSL LED solid – synced OK", "DSL LED flashing – training/not yet synced", "DSL LED off – no DSL signal"] },
+      { text: "Ensure phone line / wall socket is active", disruptive: false,
+        options: ["Wall socket active – dial tone present", "Wall socket dead – no dial tone"] },
+      { text: "Remove or bypass any inline phone filters or splitters", disruptive: false,
+        options: ["No filters/splitters present", "Filter removed – DSL synced", "Filter removed – no change"] },
+      { text: "Try a different phone cable from wall to modem", disruptive: false,
+        options: ["New cable – DSL synced, resolved", "New cable – no change"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Test at the master / test socket to rule out internal wiring", disruptive: false,
+        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
+      { text: "Raise fault with ISP – provide sync speed and line stats", disruptive: false,
+        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
     ],
     "Packet Loss": [
-      { text: "Check DSL sync rate in modem admin", disruptive: false },
-      { text: "Inspect phone line cabling condition", disruptive: false },
-      { text: "Run continuous ping and record results", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Raise fault with ISP – provide sync rates and SNR", disruptive: false }
+      { text: "Check DSL sync rate in modem admin", disruptive: false,
+        options: ["Sync rate: ___ Mbps / SNR: ___ dB – stable", "Sync rate fluctuating – unstable line", "Cannot access modem admin"] },
+      { text: "Inspect phone line cabling condition", disruptive: false,
+        options: ["Cabling OK – no damage", "Damaged cable found – replaced"] },
+      { text: "Run continuous ping and record results", disruptive: false,
+        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent bursts of loss"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Raise fault with ISP – provide sync rates and SNR", disruptive: false,
+        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
     ],
     "Slow Internet": [
-      { text: "Run speed test – record results", disruptive: false },
-      { text: "Check DSL sync rate and SNR margin in modem admin", disruptive: false },
-      { text: "Test wired vs wireless", disruptive: false },
-      { text: "Reboot modem", disruptive: true },
-      { text: "Raise fault with ISP with sync stats and test results", disruptive: false }
+      { text: "Run speed test – record results", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results within expected range – OK", "Results below expected for line"] },
+      { text: "Check DSL sync rate and SNR margin in modem admin", disruptive: false,
+        options: ["Sync rate: ___ Mbps / SNR: ___ dB – within expected range", "Sync rate low – line performance degraded"] },
+      { text: "Test wired vs wireless", disruptive: false,
+        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
+      { text: "Reboot modem", disruptive: true,
+        options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "Raise fault with ISP with sync stats and test results", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP reviewing DSL line performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live", disruptive: false },
-      { text: "Check power adapter is correct for the modem", disruptive: false },
-      { text: "Raise fault with ISP – modem replacement", disruptive: false }
+      { text: "Check power outlet is live", disruptive: false,
+        options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
+      { text: "Check power adapter is correct for the modem", disruptive: false,
+        options: ["Correct adapter – OK", "Wrong adapter found – correct adapter fitted"] },
+      { text: "Raise fault with ISP – modem replacement", disruptive: false,
+        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
     ]
   },
   "Satellite": {
     "No Internet": [
-      { text: "Confirm indoor modem has power – check Power LED", disruptive: false },
-      { text: "Check for known Sky Muster / satellite outages", disruptive: false },
-      { text: "Check Satellite LED – solid = link established, flashing = acquiring signal", disruptive: false },
-      { text: "Check weather conditions – heavy rain and storms cause rain fade on satellite", disruptive: false },
-      { text: "Visually inspect dish from a safe vantage – must not be obstructed or physically moved", disruptive: false },
-      { text: "Check coaxial cable from outdoor dish to indoor modem", disruptive: false },
-      { text: "Power cycle indoor modem – unplug 60 sec, allow ~5 min to reacquire signal", disruptive: true },
-      { text: "Raise fault with ISP – dish realignment may be required (requires technician)", disruptive: false },
-      { text: "Escalate to scheduled technician visit for dish alignment check", disruptive: false }
+      { text: "Confirm indoor modem has power – check Power LED", disruptive: false,
+        options: ["Power LED on – OK", "Power LED off – no power"] },
+      { text: "Check for known Sky Muster / satellite outages", disruptive: false,
+        options: ["No outages listed", "Active outage confirmed", "Satellite service degraded – known issue"] },
+      { text: "Check Satellite LED – solid = link established, flashing = acquiring signal", disruptive: false,
+        options: ["Satellite LED solid – link established OK", "Satellite LED flashing – acquiring signal", "Satellite LED off – no satellite link"] },
+      { text: "Check weather conditions – heavy rain and storms cause rain fade on satellite", disruptive: false,
+        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"] },
+      { text: "Visually inspect dish from a safe vantage – must not be obstructed or physically moved", disruptive: false,
+        options: ["Dish clear – no obstruction or movement", "Obstruction found on dish – cleared", "Dish appears to have moved – technician required"] },
+      { text: "Check coaxial cable from outdoor dish to indoor modem", disruptive: false,
+        options: ["Coax cable OK – no visible damage", "Cable damage or loose connector found – investigated"] },
+      { text: "Power cycle indoor modem – unplug 60 sec, allow ~5 min to reacquire signal", disruptive: true,
+        options: ["Power cycled – signal reacquired, resolved", "Power cycled – still acquiring signal", "Power cycled – no change"] },
+      { text: "Raise fault with ISP – dish realignment may be required (requires technician)", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP confirmed dish alignment required"] },
+      { text: "Escalate to scheduled technician visit for dish alignment check", disruptive: false,
+        options: ["Technician visit booked", "Escalation submitted"] }
     ],
     "Packet Loss": [
-      { text: "Check weather – satellite signal is affected by rain fade and heavy cloud", disruptive: false },
-      { text: "Check Satellite LED for intermittent drops", disruptive: false },
-      { text: "Run continuous ping – note that satellite latency of ~600ms is normal", disruptive: false },
-      { text: "Power cycle indoor modem", disruptive: true },
-      { text: "Raise fault with ISP – provide ping results", disruptive: false }
+      { text: "Check weather – satellite signal is affected by rain fade and heavy cloud", disruptive: false,
+        options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"] },
+      { text: "Check Satellite LED for intermittent drops", disruptive: false,
+        options: ["Satellite LED stable solid – OK", "Satellite LED intermittently flashing – signal unstable"] },
+      { text: "Run continuous ping – note that satellite latency of ~600ms is normal", disruptive: false,
+        options: ["Latency ~600ms, 0% loss – normal for satellite", "Latency ~600ms, intermittent loss – signal issue", "Latency >1000ms – severe degradation", "100% loss – no connectivity"] },
+      { text: "Power cycle indoor modem", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved"] },
+      { text: "Raise fault with ISP – provide ping results", disruptive: false,
+        options: ["Fault raised – latency: ___ ms, loss: __% – ref: ___", "Fault raised – ref: ___"] }
     ],
     "Slow Internet": [
-      { text: "Run speed test – record results", disruptive: false },
-      { text: "Check data usage – Sky Muster has peak / off-peak quota limits", disruptive: false },
-      { text: "Check weather conditions", disruptive: false },
-      { text: "Check signal strength in modem admin if accessible", disruptive: false },
-      { text: "Power cycle modem", disruptive: true },
-      { text: "Raise fault with ISP – provide speed test results and quota status", disruptive: false }
+      { text: "Run speed test – record results", disruptive: false,
+        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results within expected Sky Muster speeds – OK", "Results significantly below expected speeds"] },
+      { text: "Check data usage – Sky Muster has peak / off-peak quota limits", disruptive: false,
+        options: ["Peak quota not exceeded – OK", "Peak quota reached – speeds throttled to ___ Mbps", "Off-peak quota still available"] },
+      { text: "Check weather conditions", disruptive: false,
+        options: ["Weather clear – not the cause", "Rain/cloud present – may be affecting signal"] },
+      { text: "Check signal strength in modem admin if accessible", disruptive: false,
+        options: ["Signal strength: ___ – within normal range", "Signal strength low – possible misalignment"] },
+      { text: "Power cycle modem", disruptive: true,
+        options: ["Power cycled – no change", "Power cycled – resolved"] },
+      { text: "Raise fault with ISP – provide speed test results and quota status", disruptive: false,
+        options: ["Fault raised – ref: ___", "ISP reviewing satellite performance"] }
     ],
     "No Power": [
-      { text: "Check power outlet is live", disruptive: false },
-      { text: "Check power cable to indoor modem", disruptive: false },
-      { text: "Inspect modem for physical damage", disruptive: false },
-      { text: "Raise fault with ISP – hardware replacement required", disruptive: false }
+      { text: "Check power outlet is live", disruptive: false,
+        options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
+      { text: "Check power cable to indoor modem", disruptive: false,
+        options: ["Cable secure – OK", "Cable reseated – power restored", "Cable reseated – no change"] },
+      { text: "Inspect modem for physical damage", disruptive: false,
+        options: ["No visible damage", "Physical damage found – replacement required"] },
+      { text: "Raise fault with ISP – hardware replacement required", disruptive: false,
+        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
     ]
   }
 };
@@ -690,7 +864,7 @@ function renderSteps() {
 
       const resultInput = document.createElement('textarea');
       resultInput.className = 'result-input';
-      resultInput.placeholder = 'What did you observe or do? (e.g. "PON LED off – no fibre signal", "Ping shows 22% loss to 8.8.8.8", "Rebooted router – no change")';
+      resultInput.placeholder = 'What did you observe or do?';
       resultInput.rows = 2;
       resultInput.value = step.result || '';
       // Persist value on each keystroke so it survives re-renders
@@ -698,6 +872,31 @@ function renderSteps() {
 
       resultArea.appendChild(resultLabel);
       resultArea.appendChild(resultInput);
+
+      // ── Quick-pick option chips ──
+      if (step.options && step.options.length) {
+        const chipsRow = document.createElement('div');
+        chipsRow.className = 'step-option-chips';
+        step.options.forEach(opt => {
+          const chip = document.createElement('button');
+          chip.className = 'step-option-chip';
+          chip.type = 'button';
+          chip.textContent = opt;
+          chip.addEventListener('click', () => {
+            resultInput.value = opt;
+            step.result = opt;
+            resultInput.focus();
+            // If the option has a blank placeholder, select the first one
+            const blankIdx = opt.indexOf('___');
+            if (blankIdx !== -1) {
+              resultInput.setSelectionRange(blankIdx, blankIdx + 3);
+            }
+          });
+          chipsRow.appendChild(chip);
+        });
+        resultArea.appendChild(chipsRow);
+      }
+
       card.appendChild(resultArea);
 
       // ── Actions ──

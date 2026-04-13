@@ -708,6 +708,37 @@ button { font-family: inherit; }
 }
 .result-input::placeholder { color: var(--text-3); font-style: italic; }
 
+/* ── Quick-pick option chips ── */
+.step-option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.step-option-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.step-option-chip:hover {
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+.step-option-chip:active {
+  transform: scale(0.97);
+}
+
 /* ── Recorded result on completed step ── */
 .step-result-display {
   margin-top: 7px;
