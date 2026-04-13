@@ -1328,14 +1328,15 @@ function renderLightsTable() {
 function makeLedDot(status) {
   const s = status.toLowerCase();
   let cls = null;
-  if (s.includes('green') || s === 'on')   cls = 'led-green';
-  else if (s.includes('red'))               cls = 'led-red';
+  if (s.includes('green') || s === 'on')              cls = 'led-green';
+  else if (s.includes('red'))                          cls = 'led-red';
   else if (s.includes('amber') || s.includes('orange')) cls = 'led-amber';
-  else if (s.includes('white'))             cls = 'led-white';
-  else if (s === 'off')                     cls = 'led-off';
+  else if (s.includes('white'))                        cls = 'led-white';
+  else if (s === 'off')                                cls = 'led-off';
   if (!cls) return null;
+  const flashing = s.includes('flash') || s.includes('blink');
   const dot = document.createElement('span');
-  dot.className = `led-dot ${cls}`;
+  dot.className = `led-dot ${cls}${flashing ? ' led-flashing' : ''}`;
   return dot;
 }
 

@@ -1200,6 +1200,14 @@ body.light .fault-detail-input::-webkit-calendar-picker-indicator { filter: none
 .led-white  { background: #e2e8f0; box-shadow: 0 0 4px rgba(226,232,240,0.6); border: 1px solid var(--border); }
 .led-off    { background: var(--surface-3); border: 1px solid var(--border); }
 
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+.led-flashing {
+  animation: led-pulse 1.4s ease-in-out infinite;
+}
+
 .coming-soon-text {
   color: var(--text-3);
   font-size: 0.8rem;
