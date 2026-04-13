@@ -441,6 +441,18 @@ button { font-family: inherit; }
 .badge-tech  { background: var(--accent-muted);  color: var(--accent);  border: 1px solid var(--accent-border); }
 .badge-issue { background: var(--warning-muted); color: var(--warning); border: 1px solid var(--warning-border); }
 
+/* ── Client / site name card ── */
+.client-details-card {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 4px;
+}
+
 /* ── Fault / session time details card ── */
 .fault-details-card {
   display: flex;
