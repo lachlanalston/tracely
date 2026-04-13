@@ -4,6 +4,60 @@
 // TECH-SPECIFIC TROUBLESHOOTING STEPS
 // ================================================================
 
+// ── Reusable field schemas ────────────────────────────────────────
+const F = {
+  speed: [
+    { label: "Download",     key: "dl",      unit: "Mbps", inputType: "number", placeholder: "0" },
+    { label: "Upload",       key: "ul",      unit: "Mbps", inputType: "number", placeholder: "0" },
+    { label: "Ping",         key: "ping",    unit: "ms",   inputType: "number", placeholder: "0" }
+  ],
+  ping: [
+    { label: "Packet Loss",  key: "loss",    unit: "%",    inputType: "number", placeholder: "0" },
+    { label: "Avg Latency",  key: "latency", unit: "ms",   inputType: "number", placeholder: "0" },
+    { label: "Pattern",      key: "pattern", inputType: "select",
+      options: ["Stable – 0% loss", "Intermittent drops", "Consistent loss", "Total loss – no connectivity"] }
+  ],
+  satPing: [
+    { label: "Packet Loss",  key: "loss",    unit: "%",    inputType: "number", placeholder: "0" },
+    { label: "Avg Latency",  key: "latency", unit: "ms",   inputType: "number", placeholder: "600" },
+    { label: "Pattern",      key: "pattern", inputType: "select",
+      options: ["Normal (~600ms latency, 0% loss)", "High latency, no loss", "Intermittent drops", "Total loss – no connectivity"] }
+  ],
+  dslSync: [
+    { label: "Sync Rate",    key: "sync",    unit: "Mbps", inputType: "number", placeholder: "" },
+    { label: "SNR Margin",   key: "snr",     unit: "dB",   inputType: "number", placeholder: "" },
+    { label: "Status",       key: "status",  inputType: "select",
+      options: ["Stable", "Fluctuating / dropping", "Not synced", "Cannot access admin"] }
+  ],
+  signal: [
+    { label: "Signal Bars",  key: "bars",    unit: "/ 5",  inputType: "number", placeholder: "0–5" },
+    { label: "Signal Level", key: "dbm",     unit: "dBm",  inputType: "number", placeholder: "" },
+    { label: "Status",       key: "status",  inputType: "select",
+      options: ["Strong (> −70 dBm)", "Moderate (−70 to −85 dBm)", "Weak (< −85 dBm)", "No signal"] }
+  ],
+  fault: [
+    { label: "Outcome",      key: "outcome", inputType: "select",
+      options: ["Fault raised with ISP", "ISP confirmed network fault", "ISP advising onsite required", "ISP: scheduled investigation"] },
+    { label: "ISP Ref #",    key: "ref",     inputType: "text", placeholder: "e.g. INC-12345" }
+  ],
+  faultCarrier: [
+    { label: "Outcome",      key: "outcome", inputType: "select",
+      options: ["Fault raised with carrier", "Carrier confirmed network issue", "Carrier: coverage issue confirmed", "Carrier: scheduled investigation"] },
+    { label: "IMEI",         key: "imei",    inputType: "text", placeholder: "15-digit IMEI" },
+    { label: "Carrier Ref #",key: "ref",     inputType: "text", placeholder: "e.g. INC-12345" }
+  ],
+  satData: [
+    { label: "Usage Status", key: "status",  inputType: "select",
+      options: ["Within peak quota – not throttled", "Peak quota reached – speeds throttled", "Off-peak quota only available"] },
+    { label: "Throttle Speed",key:"throttle",unit: "Mbps", inputType: "number", placeholder: "if throttled" }
+  ],
+  satSignal: [
+    { label: "Signal Level", key: "signal",  inputType: "text", placeholder: "e.g. −65 dBm" },
+    { label: "Status",       key: "status",  inputType: "select",
+      options: ["Normal – within expected range", "Below expected – possible misalignment", "Cannot access modem admin"] }
+  ]
+};
+
 const stepsData = {
   "FTTP": {
     "No Internet": [
@@ -25,8 +79,7 @@ const stepsData = {
         options: ["Laptop gets internet – router confirmed faulty", "Laptop gets IP but no internet – NTD/line issue", "Laptop no IP – NTD fault"] },
       { text: "Power cycle NTD – unplug 30 sec, allow ~2 min to reconnect", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved", "Power cycled – connecting but no internet"] },
-      { text: "Raise fault with ISP – provide NTD serial number and LED status", disruptive: false,
-        options: ["Fault raised with ISP – ref: ___", "ISP confirmed network fault in area", "ISP advising onsite required"] },
+      { text: "Raise fault with ISP – provide NTD serial number and LED status", disruptive: false, fields: F.fault },
       { text: "Escalate to NBN onsite visit", disruptive: false,
         options: ["Onsite visit booked", "Escalation submitted – pending scheduling"] }
     ],
@@ -37,16 +90,14 @@ const stepsData = {
         options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance listed"] },
       { text: "Check all Ethernet cabling – NTD to router, router to device", disruptive: false,
         options: ["All cables secure – OK", "Cable fault found and replaced", "Cables reseated – no change"] },
-      { text: "Run continuous ping to 8.8.8.8 – note pattern and loss percentage", disruptive: false,
-        options: ["0% loss – stable", "1–5% loss – minor intermittent", "5–20% loss – significant", "20%+ loss – severe", "100% loss – no connectivity", "Intermittent drops then recovers"] },
+      { text: "Run continuous ping to 8.8.8.8 – note pattern and loss percentage", disruptive: false, fields: F.ping },
       { text: "Check PON LED for instability – intermittent flashing may indicate a fibre issue", disruptive: false,
         options: ["PON LED stable solid green", "PON LED intermittent flashing – unstable", "PON LED off – no fibre"] },
       { text: "Reboot router", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly improved then dropped"] },
       { text: "Test with laptop directly on UNI-D port to isolate router", disruptive: false,
         options: ["Laptop: same loss – not the router", "Laptop: no loss – router at fault", "Laptop: also losing packets – line/NTD issue"] },
-      { text: "Raise fault with ISP – provide ping test results", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP confirmed investigating"] },
+      { text: "Raise fault with ISP – provide ping test results", disruptive: false, fields: F.fault },
       { text: "Escalate to NBN onsite – possible fibre degradation", disruptive: false,
         options: ["Onsite booked", "Escalation submitted"] }
     ],
@@ -55,8 +106,7 @@ const stepsData = {
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
         options: ["No outages listed", "Active outage confirmed"] },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at or near plan speed – OK", "Results significantly below plan speed"] },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false, fields: F.speed },
       { text: "Test wired vs wireless – isolate whether issue is Wi-Fi", disruptive: false,
         options: ["Wired OK, wireless slow – Wi-Fi issue confirmed", "Both wired and wireless slow – not Wi-Fi", "Wired not possible – wireless only tested"] },
       { text: "Check for background traffic (streaming, cloud backup, Windows updates)", disruptive: false,
@@ -66,9 +116,8 @@ const stepsData = {
       { text: "Test with laptop directly on UNI-D port", disruptive: false,
         options: ["Laptop speed OK – router confirmed faulty", "Laptop also slow – line/ISP issue"] },
       { text: "Confirm service plan – check expected vs actual speeds", disruptive: false,
-        options: ["Plan: ___ Mbps – actual within acceptable range", "Plan speed vs actual speed mismatch confirmed"] },
-      { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP reviewing line performance"] }
+        options: ["Plan speed – actual within acceptable range", "Plan speed vs actual speed mismatch confirmed"] },
+      { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false, fields: F.fault }
     ],
     "No Power": [
       { text: "Check power outlet is live – test with another device", disruptive: false,
@@ -81,8 +130,7 @@ const stepsData = {
         options: ["UPS/power board OK – not the cause", "UPS fault found – device bypassed directly to wall"] },
       { text: "Inspect NTD for physical damage or burn marks", disruptive: false,
         options: ["No visible damage", "Physical damage or burn marks found – replacement required"] },
-      { text: "Raise fault with ISP – NTD likely needs replacement", disruptive: false,
-        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – NTD likely needs replacement", disruptive: false, fields: F.fault }
     ]
   },
   "HFC": {
@@ -109,8 +157,7 @@ const stepsData = {
         options: ["Loopback test passed – fault not confirmed at ISP end", "Loopback test failed – ISP confirmed fault"] },
       { text: "Request port reset from ISP / NBN", disruptive: true,
         options: ["Port reset performed – no change", "Port reset performed – resolved"] },
-      { text: "Raise fault with ISP – provide LED status and NTD serial", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP confirmed network issue", "ISP advising onsite required"] },
+      { text: "Raise fault with ISP – provide LED status and NTD serial", disruptive: false, fields: F.fault },
       { text: "Escalate to NBN onsite visit", disruptive: false,
         options: ["Onsite visit booked", "Escalation submitted – pending scheduling"] }
     ],
@@ -124,15 +171,13 @@ const stepsData = {
       { text: "Check DS/US LEDs – intermittent flashing indicates signal instability", disruptive: false,
         options: ["DS/US LEDs stable solid – OK", "DS/US LEDs intermittently flashing – signal unstable"] },
       { text: "Check for coax splitters – remove if possible, run direct to NTD", disruptive: false,
-        options: ["No splitters present", "Splitter removed – direct connection now – improved", "Splitter removed – no change"] },
-      { text: "Run continuous ping to 8.8.8.8 and record results", disruptive: false,
-        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent drops then recovers"] },
+        options: ["No splitters present", "Splitter removed – direct connection – improved", "Splitter removed – no change"] },
+      { text: "Run continuous ping to 8.8.8.8 and record results", disruptive: false, fields: F.ping },
       { text: "Reboot router", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly improved then dropped"] },
       { text: "Power cycle NTD", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
-      { text: "Raise fault with ISP – HFC signal quality check required", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP flagging for HFC signal investigation"] },
+      { text: "Raise fault with ISP – HFC signal quality check required", disruptive: false, fields: F.fault },
       { text: "Escalate to onsite – check coax splitters and wall plate quality", disruptive: false,
         options: ["Onsite booked", "Escalation submitted"] }
     ],
@@ -141,8 +186,7 @@ const stepsData = {
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
         options: ["No outages listed", "Active outage confirmed"] },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at or near plan speed – OK", "Results significantly below plan speed"] },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false, fields: F.speed },
       { text: "Test wired vs wireless to isolate the issue", disruptive: false,
         options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
       { text: "Check for background traffic", disruptive: false,
@@ -153,8 +197,7 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Power cycle NTD", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
-      { text: "Raise fault with ISP – provide speed test results", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP reviewing HFC performance"] }
+      { text: "Raise fault with ISP – provide speed test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
       { text: "Check power outlet is live", disruptive: false,
@@ -165,8 +208,7 @@ const stepsData = {
         options: ["No BBU present", "BBU present – charged and OK", "BBU fault – bypassed, NTD powered directly"] },
       { text: "Inspect NTD for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
-      { text: "Raise fault with ISP – NTD replacement likely", disruptive: false,
-        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – NTD replacement likely", disruptive: false, fields: F.fault }
     ]
   },
   "FTTN/FTTB": {
@@ -187,8 +229,7 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – DSL synced but still no internet"] },
       { text: "Test at the master socket / test socket (remove wall plate faceplate) to rule out internal wiring", disruptive: false,
         options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
-      { text: "Raise fault with ISP – provide DSL sync speed and attenuation if accessible in modem admin", disruptive: false,
-        options: ["Fault raised – sync: ___ Mbps, attenuation: ___ dB – ref: ___", "Fault raised – ref: ___", "ISP confirmed node issue"] },
+      { text: "Raise fault with ISP – provide DSL sync speed and attenuation", disruptive: false, fields: F.fault },
       { text: "Escalate to onsite", disruptive: false,
         options: ["Onsite booked", "Escalation submitted"] }
     ],
@@ -197,36 +238,30 @@ const stepsData = {
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
         options: ["No outages listed", "Active outage confirmed"] },
-      { text: "Check DSL sync rate in modem admin page (192.168.0.1 or 192.168.1.1)", disruptive: false,
-        options: ["Sync rate: ___ Mbps / SNR: ___ dB – stable", "Sync rate fluctuating – unstable line", "Cannot access modem admin"] },
+      { text: "Check DSL sync rate in modem admin (192.168.0.1 or 192.168.1.1)", disruptive: false, fields: F.dslSync },
       { text: "Inspect phone cabling condition – damaged wire causes DSL instability", disruptive: false,
         options: ["Cabling OK – no visible damage", "Damaged/frayed cable found – replaced"] },
       { text: "Check for DECT phones, alarm systems, or other devices on the line causing interference", disruptive: false,
         options: ["No interfering devices found", "DECT phone/alarm removed – improved", "DECT phone/alarm removed – no change"] },
-      { text: "Run continuous ping and record loss pattern", disruptive: false,
-        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent bursts of loss"] },
+      { text: "Run continuous ping to 8.8.8.8 and record loss pattern", disruptive: false, fields: F.ping },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "Raise fault with ISP – provide sync rates and SNR margin", disruptive: false,
-        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – provide sync rates and SNR margin", disruptive: false, fields: F.fault }
     ],
     "Slow Internet": [
       { text: "Confirm modem has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
         options: ["No outages listed", "Active outage confirmed"] },
-      { text: "Run speed test – record results", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at expected rate for line length – OK", "Results below expected – fault likely"] },
-      { text: "Check DSL sync rate in modem admin – compare to expected rate for line length", disruptive: false,
-        options: ["Sync rate: ___ Mbps – within expected range", "Sync rate: ___ Mbps – below expected for line length"] },
+      { text: "Run speed test – record results", disruptive: false, fields: F.speed },
+      { text: "Check DSL sync rate in modem admin – compare to expected rate for line length", disruptive: false, fields: F.dslSync },
       { text: "Test wired vs wireless", disruptive: false,
         options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
       { text: "Check for interference sources on the phone line", disruptive: false,
         options: ["No interference sources found", "Interfering device found and removed – improved"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "Raise fault with ISP – provide sync stats and speed test results", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP reviewing DSL line performance"] }
+      { text: "Raise fault with ISP – provide sync stats and speed test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
       { text: "Check power outlet is live", disruptive: false,
@@ -235,8 +270,7 @@ const stepsData = {
         options: ["Adapter voltage matches – OK", "Wrong adapter found – correct adapter fitted"] },
       { text: "Inspect modem for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
-      { text: "Raise fault with ISP – modem replacement required", disruptive: false,
-        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – modem replacement required", disruptive: false, fields: F.fault }
     ]
   },
   "LTE/4G": {
@@ -245,8 +279,7 @@ const stepsData = {
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known network outages in the area", disruptive: false,
         options: ["No outages listed", "Active outage confirmed in area", "Coverage issue in this location"] },
-      { text: "Check signal LEDs / bars – low signal may require repositioning the device", disruptive: false,
-        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal", "No signal – 0 bars"] },
+      { text: "Check signal LEDs / bars – low signal may require repositioning the device", disruptive: false, fields: F.signal },
       { text: "Relocate device to a higher position, near a window, or outside obstruction", disruptive: false,
         options: ["Repositioned – signal improved, internet connected", "Repositioned – signal improved, still no internet", "Repositioned – no improvement"] },
       { text: "Check SIM card is seated correctly (if accessible)", disruptive: false,
@@ -257,12 +290,10 @@ const stepsData = {
         options: ["APN settings correct – confirmed", "APN incorrect – corrected, resolved", "APN corrected – no change"] },
       { text: "Check if device is locked to a specific band – try auto band selection", disruptive: false,
         options: ["Band auto-selection set – improved", "Band was locked – unlocked, resolved", "Band auto-selection – no change"] },
-      { text: "Raise fault with ISP / carrier – provide signal strength and IMEI", disruptive: false,
-        options: ["Fault raised – IMEI: ___, signal: ___ dBm – ref: ___", "Fault raised – ref: ___", "Carrier confirmed coverage issue"] }
+      { text: "Raise fault with ISP / carrier – provide signal strength and IMEI", disruptive: false, fields: F.faultCarrier }
     ],
     "Packet Loss": [
-      { text: "Check signal strength – low or marginal signal causes packet loss", disruptive: false,
-        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal", "Signal weak – likely cause"] },
+      { text: "Check signal strength – low or marginal signal causes packet loss", disruptive: false, fields: F.signal },
       { text: "Check for local network congestion (peak evening hours)", disruptive: false,
         options: ["Peak hours – congestion likely", "Off-peak – congestion unlikely", "Congestion confirmed by carrier"] },
       { text: "Check for physical obstructions, metallic surfaces, or interference sources nearby", disruptive: false,
@@ -271,14 +302,11 @@ const stepsData = {
         options: ["Repositioned – signal improved, loss reduced", "Repositioned – no significant improvement"] },
       { text: "Reboot device", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "Raise fault with ISP – provide signal strength readings", disruptive: false,
-        options: ["Fault raised – signal: ___ dBm – ref: ___", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – provide signal strength readings", disruptive: false, fields: F.faultCarrier }
     ],
     "Slow Internet": [
-      { text: "Check signal strength – low signal reduces throughput significantly", disruptive: false,
-        options: ["Signal: ___ bars / ___ dBm – strong", "Signal: ___ bars / ___ dBm – marginal – likely cause", "No signal – 0 bars"] },
-      { text: "Run speed test – record download, upload, and ping", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results at expected 4G speeds – OK", "Results significantly below expected 4G speeds"] },
+      { text: "Check signal strength – low signal reduces throughput significantly", disruptive: false, fields: F.signal },
+      { text: "Run speed test – record download, upload, and ping", disruptive: false, fields: F.speed },
       { text: "Check for network congestion at current time", disruptive: false,
         options: ["Peak hours – congestion expected", "Off-peak – congestion not expected", "Carrier confirmed congestion in area"] },
       { text: "Reposition device for better signal", disruptive: false,
@@ -287,8 +315,7 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Check if data cap / fair use policy has been triggered", disruptive: false,
         options: ["Data cap not triggered – OK", "Data cap reached – speeds throttled", "Fair use policy applied – shaping confirmed"] },
-      { text: "Raise fault with ISP – provide speed test results and signal readings", disruptive: false,
-        options: ["Fault raised – ref: ___", "Carrier reviewing tower performance"] }
+      { text: "Raise fault with ISP – provide speed test results and signal readings", disruptive: false, fields: F.faultCarrier }
     ],
     "No Power": [
       { text: "Check power outlet is live", disruptive: false,
@@ -297,8 +324,7 @@ const stepsData = {
         options: ["Cable secure – OK", "Cable reseated – power restored", "Cable reseated – no change"] },
       { text: "Inspect device for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
-      { text: "Raise fault with ISP", disruptive: false,
-        options: ["Fault raised – ref: ___", "Replacement arranged"] }
+      { text: "Raise fault with ISP", disruptive: false, fields: F.faultCarrier }
     ]
   },
   "ADSL/VDSL": {
@@ -319,40 +345,32 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Test at the master / test socket to rule out internal wiring", disruptive: false,
         options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
-      { text: "Raise fault with ISP – provide sync speed and line stats", disruptive: false,
-        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – provide sync speed and line stats", disruptive: false, fields: F.fault }
     ],
     "Packet Loss": [
-      { text: "Check DSL sync rate in modem admin", disruptive: false,
-        options: ["Sync rate: ___ Mbps / SNR: ___ dB – stable", "Sync rate fluctuating – unstable line", "Cannot access modem admin"] },
+      { text: "Check DSL sync rate in modem admin", disruptive: false, fields: F.dslSync },
       { text: "Inspect phone line cabling condition", disruptive: false,
         options: ["Cabling OK – no damage", "Damaged cable found – replaced"] },
-      { text: "Run continuous ping and record results", disruptive: false,
-        options: ["0% loss – stable", "1–5% loss – minor", "5–20% loss – significant", "20%+ loss – severe", "Intermittent bursts of loss"] },
+      { text: "Run continuous ping to 8.8.8.8 and record results", disruptive: false, fields: F.ping },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "Raise fault with ISP – provide sync rates and SNR", disruptive: false,
-        options: ["Fault raised – sync: ___ Mbps, SNR: ___ dB – ref: ___", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – provide sync rates and SNR", disruptive: false, fields: F.fault }
     ],
     "Slow Internet": [
-      { text: "Run speed test – record results", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results within expected range – OK", "Results below expected for line"] },
-      { text: "Check DSL sync rate and SNR margin in modem admin", disruptive: false,
-        options: ["Sync rate: ___ Mbps / SNR: ___ dB – within expected range", "Sync rate low – line performance degraded"] },
+      { text: "Run speed test – record results", disruptive: false, fields: F.speed },
+      { text: "Check DSL sync rate and SNR margin in modem admin", disruptive: false, fields: F.dslSync },
       { text: "Test wired vs wireless", disruptive: false,
         options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "Raise fault with ISP with sync stats and test results", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP reviewing DSL line performance"] }
+      { text: "Raise fault with ISP with sync stats and test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
       { text: "Check power outlet is live", disruptive: false,
         options: ["Outlet live – confirmed", "Outlet dead – switched outlet"] },
       { text: "Check power adapter is correct for the modem", disruptive: false,
         options: ["Correct adapter – OK", "Wrong adapter found – correct adapter fitted"] },
-      { text: "Raise fault with ISP – modem replacement", disruptive: false,
-        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – modem replacement", disruptive: false, fields: F.fault }
     ]
   },
   "Satellite": {
@@ -371,8 +389,7 @@ const stepsData = {
         options: ["Coax cable OK – no visible damage", "Cable damage or loose connector found – investigated"] },
       { text: "Power cycle indoor modem – unplug 60 sec, allow ~5 min to reacquire signal", disruptive: true,
         options: ["Power cycled – signal reacquired, resolved", "Power cycled – still acquiring signal", "Power cycled – no change"] },
-      { text: "Raise fault with ISP – dish realignment may be required (requires technician)", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP confirmed dish alignment required"] },
+      { text: "Raise fault with ISP – dish realignment may be required (requires technician)", disruptive: false, fields: F.fault },
       { text: "Escalate to scheduled technician visit for dish alignment check", disruptive: false,
         options: ["Technician visit booked", "Escalation submitted"] }
     ],
@@ -381,26 +398,20 @@ const stepsData = {
         options: ["Weather clear – rain fade not expected", "Heavy rain/storm present – rain fade likely cause"] },
       { text: "Check Satellite LED for intermittent drops", disruptive: false,
         options: ["Satellite LED stable solid – OK", "Satellite LED intermittently flashing – signal unstable"] },
-      { text: "Run continuous ping – note that satellite latency of ~600ms is normal", disruptive: false,
-        options: ["Latency ~600ms, 0% loss – normal for satellite", "Latency ~600ms, intermittent loss – signal issue", "Latency >1000ms – severe degradation", "100% loss – no connectivity"] },
+      { text: "Run continuous ping – note that satellite latency of ~600ms is normal", disruptive: false, fields: F.satPing },
       { text: "Power cycle indoor modem", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
-      { text: "Raise fault with ISP – provide ping results", disruptive: false,
-        options: ["Fault raised – latency: ___ ms, loss: __% – ref: ___", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – provide ping results", disruptive: false, fields: F.fault }
     ],
     "Slow Internet": [
-      { text: "Run speed test – record results", disruptive: false,
-        options: ["DL: ___ Mbps · UL: ___ Mbps · Ping: ___ ms", "Results within expected Sky Muster speeds – OK", "Results significantly below expected speeds"] },
-      { text: "Check data usage – Sky Muster has peak / off-peak quota limits", disruptive: false,
-        options: ["Peak quota not exceeded – OK", "Peak quota reached – speeds throttled to ___ Mbps", "Off-peak quota still available"] },
+      { text: "Run speed test – record results", disruptive: false, fields: F.speed },
+      { text: "Check data usage – Sky Muster has peak / off-peak quota limits", disruptive: false, fields: F.satData },
       { text: "Check weather conditions", disruptive: false,
         options: ["Weather clear – not the cause", "Rain/cloud present – may be affecting signal"] },
-      { text: "Check signal strength in modem admin if accessible", disruptive: false,
-        options: ["Signal strength: ___ – within normal range", "Signal strength low – possible misalignment"] },
+      { text: "Check signal strength in modem admin if accessible", disruptive: false, fields: F.satSignal },
       { text: "Power cycle modem", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
-      { text: "Raise fault with ISP – provide speed test results and quota status", disruptive: false,
-        options: ["Fault raised – ref: ___", "ISP reviewing satellite performance"] }
+      { text: "Raise fault with ISP – provide speed test results and quota status", disruptive: false, fields: F.fault }
     ],
     "No Power": [
       { text: "Check power outlet is live", disruptive: false,
@@ -409,8 +420,7 @@ const stepsData = {
         options: ["Cable secure – OK", "Cable reseated – power restored", "Cable reseated – no change"] },
       { text: "Inspect modem for physical damage", disruptive: false,
         options: ["No visible damage", "Physical damage found – replacement required"] },
-      { text: "Raise fault with ISP – hardware replacement required", disruptive: false,
-        options: ["Fault raised – replacement arranged", "Fault raised – ref: ___"] }
+      { text: "Raise fault with ISP – hardware replacement required", disruptive: false, fields: F.fault }
     ]
   }
 };
@@ -770,8 +780,9 @@ function startSession() {
   state.steps = raw.map((s, i) => ({
     ...s,
     status:          i === 0 ? 'active' : 'pending',
-    result:          '',   // free-text result entered by tech
-    resolvedChecked: false // true once "Did this fix it?" has been answered
+    result:          '',
+    fieldValues:     {},
+    resolvedChecked: false
   }));
   state.resolved       = false;
   state.resolvedAtStep = null;
@@ -812,6 +823,18 @@ function resetSession() {
 // ================================================================
 // STEP RENDERING
 // ================================================================
+
+function buildFieldResult(fields, values) {
+  return fields
+    .map(f => {
+      const v = (values[f.key] || '').toString().trim();
+      if (!v) return null;
+      const unit = f.unit ? ' ' + f.unit : '';
+      return f.label + ': ' + v + unit;
+    })
+    .filter(Boolean)
+    .join(' · ');
+}
 
 function renderSteps() {
   const list = document.getElementById('stepsList');
@@ -854,47 +877,105 @@ function renderSteps() {
     card.appendChild(top);
 
     if (step.status === 'active' && !state.resolved) {
-      // ── Result input ──
+      // ── Result capture ──
       const resultArea = document.createElement('div');
       resultArea.className = 'step-result-area';
 
-      const resultLabel = document.createElement('label');
+      const resultLabel = document.createElement('div');
       resultLabel.className = 'result-label';
-      resultLabel.textContent = 'Result / Notes';
-
-      const resultInput = document.createElement('textarea');
-      resultInput.className = 'result-input';
-      resultInput.placeholder = 'What did you observe or do?';
-      resultInput.rows = 2;
-      resultInput.value = step.result || '';
-      // Persist value on each keystroke so it survives re-renders
-      resultInput.addEventListener('input', e => { step.result = e.target.value; });
-
+      resultLabel.textContent = 'Result';
       resultArea.appendChild(resultLabel);
-      resultArea.appendChild(resultInput);
 
-      // ── Quick-pick option chips ──
-      if (step.options && step.options.length) {
-        const chipsRow = document.createElement('div');
-        chipsRow.className = 'step-option-chips';
-        step.options.forEach(opt => {
-          const chip = document.createElement('button');
-          chip.className = 'step-option-chip';
-          chip.type = 'button';
-          chip.textContent = opt;
-          chip.addEventListener('click', () => {
-            resultInput.value = opt;
-            step.result = opt;
-            resultInput.focus();
-            // If the option has a blank placeholder, select the first one
-            const blankIdx = opt.indexOf('___');
-            if (blankIdx !== -1) {
-              resultInput.setSelectionRange(blankIdx, blankIdx + 3);
-            }
+      if (step.fields) {
+        // ── Structured fields (speed test, ping, DSL sync, signal, raise fault…) ──
+        const fieldsGrid = document.createElement('div');
+        fieldsGrid.className = 'step-fields-grid';
+
+        step.fields.forEach(f => {
+          const item = document.createElement('div');
+          item.className = 'step-field-item';
+
+          const lbl = document.createElement('label');
+          lbl.className = 'step-field-label';
+          lbl.textContent = f.label;
+          item.appendChild(lbl);
+
+          const inputWrap = document.createElement('div');
+          inputWrap.className = 'step-field-input-wrap';
+
+          let control;
+          if (f.inputType === 'select') {
+            control = document.createElement('select');
+            control.className = 'step-field-select';
+            const blank = document.createElement('option');
+            blank.value = '';
+            blank.textContent = '— select —';
+            control.appendChild(blank);
+            f.options.forEach(o => {
+              const opt = document.createElement('option');
+              opt.value = o;
+              opt.textContent = o;
+              if (step.fieldValues[f.key] === o) opt.selected = true;
+              control.appendChild(opt);
+            });
+          } else {
+            control = document.createElement('input');
+            control.className = 'step-field-input';
+            control.type = f.inputType || 'text';
+            control.placeholder = f.placeholder || '';
+            if (f.inputType === 'number') { control.min = '0'; control.step = 'any'; }
+            control.value = step.fieldValues[f.key] !== undefined ? step.fieldValues[f.key] : '';
+          }
+
+          control.addEventListener('change', () => {
+            step.fieldValues[f.key] = control.value;
+            step.result = buildFieldResult(step.fields, step.fieldValues);
           });
-          chipsRow.appendChild(chip);
+          control.addEventListener('input', () => {
+            step.fieldValues[f.key] = control.value;
+            step.result = buildFieldResult(step.fields, step.fieldValues);
+          });
+
+          inputWrap.appendChild(control);
+          if (f.unit) {
+            const unit = document.createElement('span');
+            unit.className = 'step-field-unit';
+            unit.textContent = f.unit;
+            inputWrap.appendChild(unit);
+          }
+          item.appendChild(inputWrap);
+          fieldsGrid.appendChild(item);
         });
-        resultArea.appendChild(chipsRow);
+        resultArea.appendChild(fieldsGrid);
+
+      } else if (step.options) {
+        // ── Single-select radio options ──
+        const optList = document.createElement('div');
+        optList.className = 'step-option-list';
+        step.options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'step-option-btn' + (step.result === opt ? ' selected' : '');
+          btn.textContent = opt;
+          btn.addEventListener('click', () => {
+            step.result = opt;
+            // Update selection highlight without full re-render
+            optList.querySelectorAll('.step-option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+          });
+          optList.appendChild(btn);
+        });
+        resultArea.appendChild(optList);
+
+      } else {
+        // ── Fallback: free-text textarea ──
+        const textarea = document.createElement('textarea');
+        textarea.className = 'result-input';
+        textarea.placeholder = 'What did you observe or do?';
+        textarea.rows = 2;
+        textarea.value = step.result || '';
+        textarea.addEventListener('input', e => { step.result = e.target.value; });
+        resultArea.appendChild(textarea);
       }
 
       card.appendChild(resultArea);
@@ -981,10 +1062,15 @@ function renderSteps() {
   if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function completeStep(index) {
-  // Capture latest textarea value before the DOM is re-rendered
+function snapshotResult(index) {
+  // For fields-type steps the result is kept up-to-date via input listeners.
+  // For fallback textarea, snapshot it now in case listener missed a change.
   const textarea = document.querySelector(`#step-${index} .result-input`);
   if (textarea) state.steps[index].result = textarea.value.trim();
+}
+
+function completeStep(index) {
+  snapshotResult(index);
 
   if (state.steps[index].disruptive) {
     state.pendingStepIndex = index;
@@ -1005,9 +1091,7 @@ function doCompleteStep(index) {
 
 // Called from the "Issue Fixed" button on the active step card
 function completeAndResolve(index) {
-  // Save textarea value first
-  const textarea = document.querySelector(`#step-${index} .result-input`);
-  if (textarea) state.steps[index].result = textarea.value.trim();
+  snapshotResult(index);
 
   if (state.steps[index].disruptive) {
     // Reuse disruptive confirm, but flag that we should resolve after

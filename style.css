@@ -708,35 +708,117 @@ button { font-family: inherit; }
 }
 .result-input::placeholder { color: var(--text-3); font-style: italic; }
 
-/* ── Quick-pick option chips ── */
-.step-option-chips {
+/* ── Radio-style single-select options ── */
+.step-option-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 7px;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
 }
 
-.step-option-chip {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 99px;
+.step-option-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text-2);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-family: inherit;
   cursor: pointer;
   transition: all var(--transition);
   line-height: 1.4;
-  white-space: nowrap;
 }
-.step-option-chip:hover {
+.step-option-btn:hover {
   background: var(--accent-muted);
   border-color: var(--accent-border);
-  color: var(--accent);
+  color: var(--text);
 }
-.step-option-chip:active {
-  transform: scale(0.97);
+.step-option-btn.selected {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.step-option-btn.selected::before {
+  content: '✓  ';
+  font-weight: 700;
+}
+
+/* ── Structured field grid (speed test, ping, DSL sync…) ── */
+.step-fields-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 6px;
+}
+
+.step-field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 100px;
+  flex: 1;
+}
+
+.step-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+
+.step-field-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.step-field-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--transition);
+  /* prevent number spinners looking huge */
+  -moz-appearance: textfield;
+}
+.step-field-input::-webkit-outer-spin-button,
+.step-field-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.step-field-input:focus { border-color: var(--accent); background: var(--surface); }
+.step-field-input::placeholder { color: var(--text-3); font-style: italic; font-size: 0.78rem; }
+
+.step-field-select {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.step-field-select:focus { border-color: var(--accent); }
+.step-field-select option { background: var(--surface); color: var(--text); }
+
+.step-field-unit {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ── Recorded result on completed step ── */
