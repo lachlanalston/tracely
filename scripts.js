@@ -718,7 +718,7 @@ const stepsData = {
 // ================================================================
 
 const TECH_TYPES  = ["FTTP", "HFC", "FTTN/FTTB", "Mobile Broadband", "ADSL/VDSL", "Satellite"];
-const ISSUE_TYPES = ["No Internet", "Packet Loss", "Slow Internet", "No Power"];
+// Issue types are derived dynamically from stepsData per selected tech
 
 const techInfo = {
   "FTTP": [
@@ -1081,7 +1081,10 @@ function renderTechGrid() {
 function renderIssueGrid() {
   const grid = document.getElementById('issueGrid');
   grid.innerHTML = '';
-  ISSUE_TYPES.forEach(issue => {
+  const issues = state.tech && stepsData[state.tech]
+    ? Object.keys(stepsData[state.tech])
+    : ["No Internet", "Packet Loss", "Slow Internet", "No Power"];
+  issues.forEach(issue => {
     const btn = document.createElement('button');
     btn.className = 'filter-item' + (state.issue === issue ? ' selected' : '');
     btn.textContent = issue;
