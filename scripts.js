@@ -200,6 +200,11 @@ const stepsData = {
         exits: {
           "Plan speed – actual within acceptable range": "Speeds confirmed within acceptable range for the service plan – no NBN fault present"
         }},
+      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and retest – confirms if line quality is the limiting factor", disruptive: true,
+        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false, fields: F.fault }
     ],
     "No Power": [
@@ -323,6 +328,11 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Power cycle NTD", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
+      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and retest – HFC line quality can limit performance at higher speeds", disruptive: true,
+        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP – provide speed test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
@@ -358,6 +368,11 @@ const stepsData = {
       { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true,
         options: ["Power cycled – stable since", "Power cycled – briefly stable then dropped again", "Power cycled – no change"] },
       { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and monitor stability – HFC lines can drop sessions under load at higher speeds", disruptive: true,
+        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – dropouts resolved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection stable at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
     ],
     "Wi-Fi Issues": WIFI_STEPS,
@@ -429,6 +444,11 @@ const stepsData = {
         options: ["No interference sources found", "Interfering device found and removed – improved"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "If on a high-speed plan (100 Mbps+), temporarily shape/limit the connection speed and retest – line length and quality limits achievable sync rate on FTTN/FTTB", disruptive: true,
+        options: ["Not applicable – plan speed is already at line's expected maximum", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP – provide sync stats and speed test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
@@ -459,6 +479,11 @@ const stepsData = {
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
       { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
+      { text: "If on a high-speed plan (100 Mbps+), temporarily shape/limit the connection speed and monitor stability – DSL lines can retrain or drop sessions when pushed beyond line quality limits", disruptive: true,
+        options: ["Not applicable – plan speed is already at line's expected maximum", "Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – dropouts resolved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection stable at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP – provide dropout times, frequency, and WAN log excerpt", disruptive: false, fields: F.fault }
     ],
     "Wi-Fi Issues": WIFI_STEPS,
@@ -590,6 +615,11 @@ const stepsData = {
         options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
+      { text: "If speeds are lower than expected for the plan, temporarily shape/limit the connection speed and retest – confirms if line quality is the ceiling", disruptive: true,
+        options: ["Not applicable – speeds are at expected line maximum", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+        exits: {
+          "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
+        }},
       { text: "Raise fault with ISP with sync stats and test results", disruptive: false, fields: F.fault }
     ],
     "No Power": [
@@ -1001,6 +1031,7 @@ const state = {
   faultStartTime:    '',
   clientName:        '',
   siteName:          '',
+  planSpeed:         '',
   conclusion:        '',
 };
 
@@ -1055,7 +1086,6 @@ function initResizeHandle() {
 function init() {
   renderTechGrid();
   renderIssueGrid();
-  setupInfoTabs();
   setupMobileTabs();
   bindButtons();
   bindKeyboard();
@@ -1107,7 +1137,10 @@ function selectTech(tech) {
 function selectIssue(issue) {
   state.issue = issue;
   renderIssueGrid();
-  if (state.tech) startSession();
+  if (state.tech) {
+    renderEquipmentPanel();
+    startSession();
+  }
 }
 
 // ================================================================
@@ -1125,6 +1158,7 @@ function startSession() {
   }));
   state.resolved        = false;
   state.resolvedAtStep  = null;
+  state.conclusion      = '';
   state.sessionStartTime = new Date();
   state.faultStartTime  = '';
 
@@ -1160,8 +1194,11 @@ function resetSession() {
   hide('faultDetailsCard');
   document.getElementById('clientNameInput').value = '';
   document.getElementById('siteNameInput').value   = '';
+  document.getElementById('planSpeedInput').value  = '';
   show('emptyState');
   hide('equipmentView');
+  document.getElementById('equipmentEmpty').querySelector('p').textContent =
+    'Select a technology type to view equipment reference';
   show('equipmentEmpty');
   renderTechGrid();
   renderIssueGrid();
@@ -1552,8 +1589,22 @@ function updateProgress() {
 // EQUIPMENT PANEL
 // ================================================================
 
+const EQUIPMENT_NA_ISSUES = ['Wi-Fi Issues', 'VoIP Issues'];
+
 function renderEquipmentPanel() {
   if (!state.tech || !techInfo[state.tech]) return;
+
+  if (EQUIPMENT_NA_ISSUES.includes(state.issue)) {
+    hide('equipmentView');
+    const empty = document.getElementById('equipmentEmpty');
+    empty.querySelector('p').textContent = 'Equipment reference not applicable for this issue type.';
+    show('equipmentEmpty');
+    return;
+  }
+
+  // Restore default empty text in case it was changed
+  document.getElementById('equipmentEmpty').querySelector('p').textContent =
+    'Select a technology type to view equipment reference';
 
   hide('equipmentEmpty');
   show('equipmentView');
@@ -1820,15 +1871,16 @@ function generateTicket() {
   const faultLine   = faultStartStr   ? `\nFault started: ${faultStartStr}` : '';
   const sessionLine = `\nTroubleshooting started: ${sessionStartStr}`;
 
-  const clientLine = state.clientName ? `\nClient:     ${state.clientName}` : '';
-  const siteLine   = state.siteName   ? `\nSite:       ${state.siteName}`   : '';
+  const clientLine    = state.clientName ? `\nClient:     ${state.clientName}` : '';
+  const siteLine      = state.siteName   ? `\nSite:       ${state.siteName}`   : '';
+  const planSpeedLine = state.planSpeed  ? `\nPlan Speed: ${state.planSpeed}`  : '';
 
   const ticket =
 `TROUBLESHOOTING SESSION
 ──────────────────────────────────${clientLine}${siteLine}
 Date:       ${dateStr} ${timeStr}${faultLine}${sessionLine}
 Duration:   ${fmtTime(state.timerSeconds)}
-Technology: ${state.tech}
+Technology: ${state.tech}${planSpeedLine}
 Device:     ${modelName}
 Issue:      ${state.issue}
 Outcome:    ${outcome}
@@ -1854,6 +1906,9 @@ function bindButtons() {
   });
   document.getElementById('siteNameInput').addEventListener('input', e => {
     state.siteName = e.target.value.trim();
+  });
+  document.getElementById('planSpeedInput').addEventListener('input', e => {
+    state.planSpeed = e.target.value.trim();
   });
 
   // Fault start time input
@@ -1944,20 +1999,7 @@ function bindButtons() {
 }
 
 // ================================================================
-// INFO TABS (LED Status / Port Guide)
-// ================================================================
-
-function setupInfoTabs() {
-  document.querySelectorAll('.info-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.info-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const target = tab.dataset.target;
-      document.getElementById('ledPanel').classList.toggle('d-none', target !== 'ledPanel');
-      document.getElementById('portsPanel').classList.toggle('d-none', target !== 'portsPanel');
-    });
-  });
-}
+// MOBILE TABS
 
 // ================================================================
 // MOBILE TABS

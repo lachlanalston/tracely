@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tracely – NBN Troubleshooter</title>
+  <title>Tracely – Network Troubleshooter</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark">
@@ -90,6 +90,10 @@
             <label class="fault-detail-label" for="siteNameInput">Site Name</label>
             <input type="text" id="siteNameInput" class="fault-detail-input" placeholder="e.g. Head Office">
           </div>
+          <div class="fault-detail-item">
+            <label class="fault-detail-label" for="planSpeedInput">Plan Speed</label>
+            <input type="text" id="planSpeedInput" class="fault-detail-input" placeholder="e.g. 100/20 Mbps">
+          </div>
         </div>
 
         <div class="session-header">
@@ -160,14 +164,7 @@
         <div class="image-tabs" id="imageTabs"></div>
         <div class="equipment-image-wrap" id="equipmentImageWrap"></div>
 
-        <div class="info-tabs">
-          <button class="info-tab active" data-target="ledPanel">LED Status</button>
-          <button class="info-tab" data-target="portsPanel">Port Guide</button>
-        </div>
         <div class="panel-content" id="ledPanel"></div>
-        <div class="panel-content d-none" id="portsPanel">
-          <p class="coming-soon-text">Port diagrams coming soon.<br>Add images to <code>images/&lt;tech&gt;/</code>.</p>
-        </div>
 
       </div>
     </aside>
