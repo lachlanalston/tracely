@@ -709,11 +709,93 @@ const state = {
   isDark:            true,
   resolved:          false,
   resolvedAtStep:    null,
+  sessionStartTime:  null,
+  faultStartTime:    '',
 };
 
 // ================================================================
 // INIT
 // ================================================================
+
+function renderFaultDetailsCard() {
+  const card = document.getElementById('faultDetailsCard');
+  card.innerHTML = '';
+  show('faultDetailsCard');
+
+  // Fault reported time (user-entered)
+  const faultItem = document.createElement('div');
+  faultItem.className = 'fault-detail-item';
+
+  const faultLbl = document.createElement('label');
+  faultLbl.className = 'fault-detail-label';
+  faultLbl.textContent = 'Fault reported';
+  faultLbl.setAttribute('for', 'faultStartInput');
+
+  const faultInput = document.createElement('input');
+  faultInput.type = 'datetime-local';
+  faultInput.id = 'faultStartInput';
+  faultInput.className = 'fault-detail-input';
+  faultInput.value = state.faultStartTime || '';
+  faultInput.addEventListener('change', () => { state.faultStartTime = faultInput.value; });
+
+  faultItem.appendChild(faultLbl);
+  faultItem.appendChild(faultInput);
+
+  // Session started (auto-captured, read-only)
+  const sessionItem = document.createElement('div');
+  sessionItem.className = 'fault-detail-item';
+
+  const sessionLbl = document.createElement('div');
+  sessionLbl.className = 'fault-detail-label';
+  sessionLbl.textContent = 'Troubleshooting started';
+
+  const sessionVal = document.createElement('div');
+  sessionVal.className = 'fault-detail-value';
+  if (state.sessionStartTime) {
+    sessionVal.textContent = state.sessionStartTime.toLocaleString('en-AU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  sessionItem.appendChild(sessionLbl);
+  sessionItem.appendChild(sessionVal);
+
+  card.appendChild(faultItem);
+  card.appendChild(sessionItem);
+}
+
+function initResizeHandle() {
+  const handle = document.getElementById('eqResizeHandle');
+  const layout  = document.querySelector('.app-layout');
+
+  handle.addEventListener('mousedown', e => {
+    if (window.innerWidth <= 768) return; // mobile: no resize
+    e.preventDefault();
+
+    const startX     = e.clientX;
+    const startWidth = document.getElementById('equipmentPanel').getBoundingClientRect().width;
+
+    document.body.style.cursor    = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(ev) {
+      const dx   = startX - ev.clientX; // drag left = wider
+      const newW = Math.max(220, Math.min(Math.floor(window.innerWidth * 0.5), startWidth + dx));
+      layout.style.gridTemplateColumns = `var(--sidebar-w) 1fr ${newW}px`;
+    }
+
+    function onUp() {
+      document.body.style.cursor    = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
 
 function init() {
   renderTechGrid();
@@ -722,6 +804,7 @@ function init() {
   setupMobileTabs();
   bindButtons();
   bindKeyboard();
+  initResizeHandle();
 }
 
 // ================================================================
@@ -784,8 +867,10 @@ function startSession() {
     fieldValues:     {},
     resolvedChecked: false
   }));
-  state.resolved       = false;
-  state.resolvedAtStep = null;
+  state.resolved        = false;
+  state.resolvedAtStep  = null;
+  state.sessionStartTime = new Date();
+  state.faultStartTime  = '';
 
   stopTimer();
   state.timerSeconds = 0;
@@ -798,6 +883,7 @@ function startSession() {
   document.getElementById('sessionTechBadge').textContent  = state.tech;
   document.getElementById('sessionIssueBadge').textContent = state.issue;
 
+  renderFaultDetailsCard();
   renderSteps();
   updateProgress();
 }
@@ -808,6 +894,7 @@ function resetSession() {
     tech: null, issue: null, steps: [],
     modelIndex: 0, imageTab: 0, timerSeconds: 0,
     pendingStepIndex: null, pendingResolution: false, resolved: false, resolvedAtStep: null,
+    sessionStartTime: null, faultStartTime: '',
   });
 
   document.getElementById('resetBtn').hidden = true;
@@ -1340,6 +1427,22 @@ function generateTicket() {
     ? `Resolved – fixed at step ${state.resolvedAtStep + 1}`
     : 'Unresolved – further action required';
 
+  // Fault / session times
+  let faultStartStr = '';
+  if (state.faultStartTime) {
+    const fd = new Date(state.faultStartTime);
+    faultStartStr = fd.toLocaleString('en-AU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  const sessionStartStr = state.sessionStartTime
+    ? state.sessionStartTime.toLocaleString('en-AU', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+    : timeStr;
+
   // Build the chronological steps log with results inline
   let stepLog = '';
   state.steps.forEach((s, i) => {
@@ -1372,10 +1475,13 @@ function generateTicket() {
   const completedCount = state.steps.filter(s => s.status === 'done').length;
   const skippedCount   = state.steps.filter(s => s.status === 'skipped').length;
 
+  const faultLine   = faultStartStr   ? `\nFault started: ${faultStartStr}` : '';
+  const sessionLine = `\nTroubleshooting started: ${sessionStartStr}`;
+
   const ticket =
 `TROUBLESHOOTING SESSION
 ──────────────────────────────────
-Date:       ${dateStr} ${timeStr}
+Date:       ${dateStr} ${timeStr}${faultLine}${sessionLine}
 Duration:   ${fmtTime(state.timerSeconds)}
 Technology: ${state.tech}
 Device:     ${modelName}

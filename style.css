@@ -441,6 +441,61 @@ button { font-family: inherit; }
 .badge-tech  { background: var(--accent-muted);  color: var(--accent);  border: 1px solid var(--accent-border); }
 .badge-issue { background: var(--warning-muted); color: var(--warning); border: 1px solid var(--warning-border); }
 
+/* ── Fault / session time details card ── */
+.fault-details-card {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.fault-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.fault-detail-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-3);
+}
+
+.fault-detail-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+  cursor: pointer;
+}
+.fault-detail-input:focus { border-color: var(--accent); }
+/* Style the calendar picker icon on dark bg */
+.fault-detail-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+body.light .fault-detail-input::-webkit-calendar-picker-indicator { filter: none; }
+
+.fault-detail-value {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  padding: 5px 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .session-progress-wrap {
   display: flex;
   align-items: center;
@@ -968,6 +1023,24 @@ button { font-family: inherit; }
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  position: relative; /* anchor the resize handle */
+}
+
+/* Drag-to-resize handle on the left edge of the equipment panel */
+.eq-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background var(--transition);
+}
+.eq-resize-handle:hover,
+.eq-resize-handle:active {
+  background: var(--accent-border);
 }
 
 .equipment-empty {
