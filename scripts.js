@@ -464,7 +464,7 @@ const stepsData = {
     "Wi-Fi Issues": WIFI_STEPS,
     "VoIP Issues": VOIP_STEPS
   },
-  "LTE/4G": {
+  "Mobile Broadband": {
     "No Internet": [
       { text: "Confirm device has power – Power LED should be on", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power"] },
@@ -717,7 +717,7 @@ const stepsData = {
 // HARDWARE DATABASE
 // ================================================================
 
-const TECH_TYPES  = ["FTTP", "HFC", "FTTN/FTTB", "LTE/4G", "ADSL/VDSL", "Satellite"];
+const TECH_TYPES  = ["FTTP", "HFC", "FTTN/FTTB", "Mobile Broadband", "ADSL/VDSL", "Satellite"];
 const ISSUE_TYPES = ["No Internet", "Packet Loss", "Slow Internet", "No Power"];
 
 const techInfo = {
@@ -776,7 +776,7 @@ const techInfo = {
       ]
     }
   ],
-  "LTE/4G": [
+  "Mobile Broadband": [
     {
       model: "Nokia FastMile 4G",
       images: [
@@ -910,7 +910,7 @@ const lightsData = {
       ["Internet","Off","Not connected"]
     ]
   },
-  "LTE/4G": {
+  "Mobile Broadband": {
     "Nokia FastMile 4G": [
       ["LED","Status","Meaning"],
       ["Power","Solid Green","Device powered on"],
@@ -1645,10 +1645,9 @@ function renderLightsTable() {
 function makeSignalBars(status) {
   const s = status.toLowerCase();
   const barMatch = s.match(/(\d+)\s+bar/);
-  const isOff = s === 'off' || s.includes('no signal');
-  if (!barMatch && !isOff) return null;
+  if (!barMatch) return null;
 
-  const active = isOff ? 0 : parseInt(barMatch[1]);
+  const active = parseInt(barMatch[1]);
   const color = active >= 3 ? 'var(--success)'
               : active === 2 ? 'var(--warning)'
               : active === 1 ? 'var(--danger)'
