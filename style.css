@@ -634,6 +634,182 @@ button { font-family: inherit; }
   gap: 10px;
 }
 
+/* ── Result input (active step) ── */
+.step-result-area {
+  margin-top: 12px;
+  margin-left: 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.result-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-3);
+}
+
+.result-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition);
+  min-height: 60px;
+}
+.result-input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.result-input::placeholder { color: var(--text-3); font-style: italic; }
+
+/* ── Recorded result on completed step ── */
+.step-result-display {
+  margin-top: 7px;
+  margin-left: 35px;
+  font-size: 0.8rem;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 5px 10px;
+  line-height: 1.5;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.result-arrow {
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── "Did this resolve it?" prompt ── */
+.resolved-prompt {
+  margin-top: 12px;
+  margin-left: 35px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.resolved-prompt-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-right: 4px;
+}
+
+.btn-resolved-yes {
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  background: var(--success-muted);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-resolved-yes:hover {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.btn-resolved-no {
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-resolved-no:hover {
+  border-color: var(--text-2);
+  color: var(--text-2);
+}
+
+/* ── Step resolved-here tag ── */
+.step-resolved-tag {
+  margin-top: 8px;
+  margin-left: 35px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-muted);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-full);
+  display: inline-block;
+  padding: 3px 10px;
+}
+
+/* ── Cancelled step (after session resolved) ── */
+.step-card.cancelled {
+  opacity: 0.3;
+  background: var(--surface-2);
+  border-color: var(--border-subtle);
+  pointer-events: none;
+}
+
+/* ── Session resolved banner ── */
+.resolved-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--success-muted);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 4px;
+  animation: slideUp 0.25s ease;
+}
+
+.resolved-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.resolved-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.resolved-banner-content strong {
+  font-size: 0.9rem;
+  color: var(--success);
+}
+.resolved-banner-content span {
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
 /* ================================================================
    EQUIPMENT PANEL
 ================================================================ */

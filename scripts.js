@@ -522,6 +522,8 @@ const state = {
   timerInterval:     null,
   pendingStepIndex:  null,
   isDark:            true,
+  resolved:          false,
+  resolvedAtStep:    null,
 };
 
 // ================================================================
@@ -590,7 +592,14 @@ function selectIssue(issue) {
 
 function startSession() {
   const raw = (stepsData[state.tech] && stepsData[state.tech][state.issue]) || [];
-  state.steps = raw.map((s, i) => ({ ...s, status: i === 0 ? 'active' : 'pending' }));
+  state.steps = raw.map((s, i) => ({
+    ...s,
+    status:          i === 0 ? 'active' : 'pending',
+    result:          '',   // free-text result entered by tech
+    resolvedChecked: false // true once "Did this fix it?" has been answered
+  }));
+  state.resolved       = false;
+  state.resolvedAtStep = null;
 
   stopTimer();
   state.timerSeconds = 0;
@@ -612,7 +621,7 @@ function resetSession() {
   Object.assign(state, {
     tech: null, issue: null, steps: [],
     modelIndex: 0, imageTab: 0, timerSeconds: 0,
-    pendingStepIndex: null,
+    pendingStepIndex: null, resolved: false, resolvedAtStep: null,
   });
 
   document.getElementById('resetBtn').hidden = true;
@@ -635,8 +644,9 @@ function renderSteps() {
   list.innerHTML = '';
 
   state.steps.forEach((step, i) => {
+    const isCancelled = state.resolved && step.status === 'pending';
     const card = document.createElement('div');
-    card.className = `step-card ${step.status}`;
+    card.className = `step-card ${isCancelled ? 'cancelled' : step.status}`;
     card.id = `step-${i}`;
 
     // Number bubble
@@ -648,10 +658,10 @@ function renderSteps() {
     const body = document.createElement('div');
     body.className = 'step-body';
 
-    const text = document.createElement('div');
-    text.className = 'step-text';
-    text.textContent = step.text;
-    body.appendChild(text);
+    const textEl = document.createElement('div');
+    textEl.className = 'step-text';
+    textEl.textContent = step.text;
+    body.appendChild(textEl);
 
     if (step.disruptive) {
       const meta = document.createElement('div');
@@ -669,8 +679,28 @@ function renderSteps() {
     top.appendChild(body);
     card.appendChild(top);
 
-    // Actions or status label
-    if (step.status === 'active') {
+    if (step.status === 'active' && !state.resolved) {
+      // ── Result input ──
+      const resultArea = document.createElement('div');
+      resultArea.className = 'step-result-area';
+
+      const resultLabel = document.createElement('label');
+      resultLabel.className = 'result-label';
+      resultLabel.textContent = 'Result / Notes';
+
+      const resultInput = document.createElement('textarea');
+      resultInput.className = 'result-input';
+      resultInput.placeholder = 'What did you observe or do? (e.g. "PON LED off – no fibre signal", "Ping shows 22% loss to 8.8.8.8", "Rebooted router – no change")';
+      resultInput.rows = 2;
+      resultInput.value = step.result || '';
+      // Persist value on each keystroke so it survives re-renders
+      resultInput.addEventListener('input', e => { step.result = e.target.value; });
+
+      resultArea.appendChild(resultLabel);
+      resultArea.appendChild(resultInput);
+      card.appendChild(resultArea);
+
+      // ── Actions ──
       const actions = document.createElement('div');
       actions.className = 'step-actions';
 
@@ -689,12 +719,65 @@ function renderSteps() {
       card.appendChild(actions);
 
     } else if (step.status === 'done') {
-      const lbl = document.createElement('div');
-      lbl.className = 'step-status-label step-status-done';
-      lbl.textContent = '✓ Completed';
-      card.appendChild(lbl);
+      // ── Recorded result ──
+      if (step.result) {
+        const rd = document.createElement('div');
+        rd.className = 'step-result-display';
+        const arrow = document.createElement('span');
+        arrow.className = 'result-arrow';
+        arrow.textContent = '→';
+        const resultText = document.createElement('span');
+        resultText.textContent = step.result;
+        rd.appendChild(arrow);
+        rd.appendChild(resultText);
+        card.appendChild(rd);
+      }
+
+      if (state.resolvedAtStep === i) {
+        // This step resolved the issue
+        const tag = document.createElement('div');
+        tag.className = 'step-resolved-tag';
+        tag.textContent = '✓ Issue resolved here';
+        card.appendChild(tag);
+
+      } else if (!step.resolvedChecked) {
+        // ── "Did this fix it?" prompt ──
+        const prompt = document.createElement('div');
+        prompt.className = 'resolved-prompt';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'resolved-prompt-label';
+        lbl.textContent = 'Did this resolve the issue?';
+
+        const yesBtn = document.createElement('button');
+        yesBtn.className = 'btn-resolved-yes';
+        yesBtn.textContent = 'Yes – Issue Fixed';
+        yesBtn.addEventListener('click', () => markSessionResolved(i));
+
+        const noBtn = document.createElement('button');
+        noBtn.className = 'btn-resolved-no';
+        noBtn.textContent = 'No – Continue';
+        noBtn.addEventListener('click', () => continueAfterStep(i));
+
+        prompt.appendChild(lbl);
+        prompt.appendChild(yesBtn);
+        prompt.appendChild(noBtn);
+        card.appendChild(prompt);
+
+      } else {
+        const lbl = document.createElement('div');
+        lbl.className = 'step-status-label step-status-done';
+        lbl.textContent = '✓ Completed';
+        card.appendChild(lbl);
+      }
 
     } else if (step.status === 'skipped') {
+      if (step.result) {
+        const rd = document.createElement('div');
+        rd.className = 'step-result-display';
+        rd.textContent = step.result;
+        card.appendChild(rd);
+      }
       const lbl = document.createElement('div');
       lbl.className = 'step-status-label step-status-skipped';
       lbl.textContent = 'Skipped';
@@ -704,12 +787,17 @@ function renderSteps() {
     list.appendChild(card);
   });
 
-  // Scroll active step into view
+  renderResolvedBanner();
+
   const active = document.querySelector('.step-card.active');
   if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function completeStep(index) {
+  // Capture latest textarea value before the DOM is re-rendered
+  const textarea = document.querySelector(`#step-${index} .result-input`);
+  if (textarea) state.steps[index].result = textarea.value.trim();
+
   if (state.steps[index].disruptive) {
     state.pendingStepIndex = index;
     document.getElementById('confirmModalText').textContent =
@@ -722,16 +810,67 @@ function completeStep(index) {
 
 function doCompleteStep(index) {
   state.steps[index].status = 'done';
+  // Don't activate next yet — wait for the "Did this fix it?" answer
+  renderSteps();
+  updateProgress();
+}
+
+function continueAfterStep(index) {
+  state.steps[index].resolvedChecked = true;
   activateNext(index);
   renderSteps();
   updateProgress();
 }
 
+function markSessionResolved(index) {
+  state.steps[index].resolvedChecked = true;
+  state.resolved       = true;
+  state.resolvedAtStep = index;
+  stopTimer();
+  renderSteps();
+  updateProgress();
+  generateTicket();
+}
+
 function skipStep(index) {
-  state.steps[index].status = 'skipped';
+  state.steps[index].status          = 'skipped';
+  state.steps[index].resolvedChecked = true;
   activateNext(index);
   renderSteps();
   updateProgress();
+}
+
+function renderResolvedBanner() {
+  const existing = document.getElementById('resolvedBanner');
+  if (existing) existing.remove();
+
+  if (!state.resolved) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'resolvedBanner';
+  banner.className = 'resolved-banner';
+
+  const iconEl = document.createElement('div');
+  iconEl.className = 'resolved-banner-icon';
+  iconEl.textContent = '✓';
+
+  const content = document.createElement('div');
+  content.className = 'resolved-banner-content';
+
+  const title = document.createElement('strong');
+  title.textContent = 'Issue Resolved';
+
+  const detail = document.createElement('span');
+  const resolvedStep = state.steps[state.resolvedAtStep];
+  detail.textContent = `Fixed at step ${state.resolvedAtStep + 1}: ${resolvedStep.text}`;
+
+  content.appendChild(title);
+  content.appendChild(detail);
+  banner.appendChild(iconEl);
+  banner.appendChild(content);
+
+  const sessionView = document.getElementById('sessionView');
+  sessionView.insertBefore(banner, sessionView.firstChild);
 }
 
 function activateNext(from) {
@@ -905,32 +1044,59 @@ function fmtTime(secs) {
 function generateTicket() {
   if (!state.tech || !state.issue) return;
 
-  const now        = new Date();
-  const dateStr    = now.toLocaleDateString('en-AU');
-  const timeStr    = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
-  const modelName  = techInfo[state.tech] ? techInfo[state.tech][state.modelIndex].model : 'Unknown';
-  const done       = state.steps.filter(s => s.status === 'done');
-  const skipped    = state.steps.filter(s => s.status === 'skipped');
-  const remaining  = state.steps.filter(s => s.status === 'pending' || s.status === 'active');
+  const now       = new Date();
+  const dateStr   = now.toLocaleDateString('en-AU');
+  const timeStr   = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  const modelName = techInfo[state.tech] ? techInfo[state.tech][state.modelIndex].model : 'Unknown';
+  const outcome   = state.resolved
+    ? `Resolved – fixed at step ${state.resolvedAtStep + 1}`
+    : 'Unresolved – further action required';
 
-  const lines = (arr, flag) =>
-    arr.length ? arr.map((s, i) => `  ${i + 1}. ${s.text}${flag && s.disruptive ? ' [DISRUPTIVE]' : ''}`).join('\n') : '  None';
+  // Build the chronological steps log with results inline
+  let stepLog = '';
+  state.steps.forEach((s, i) => {
+    if (s.status === 'pending' && state.resolved) return; // skip cancelled steps
+    const num    = String(i + 1).padStart(2, ' ');
+    const flag   = s.disruptive ? ' [DISRUPTIVE]' : '';
+    const marker = s.status === 'done' ? '✓' : s.status === 'skipped' ? '–' : '○';
+    stepLog += `  ${num}. ${marker} ${s.text}${flag}\n`;
+    if (s.result) {
+      stepLog += `        Result: ${s.result}\n`;
+    }
+    if (state.resolvedAtStep === i) {
+      stepLog += `        → Issue resolved here\n`;
+    }
+  });
 
-  const ticket = `TROUBLESHOOTING SESSION
+  // Remaining steps (only when session not resolved)
+  let remainingLog = '';
+  if (!state.resolved) {
+    const remaining = state.steps.filter(s => s.status === 'pending' || s.status === 'active');
+    if (remaining.length) {
+      remainingLog = `\nREMAINING STEPS:\n` +
+        remaining.map((s, i) => {
+          const flag = s.disruptive ? ' [DISRUPTIVE]' : '';
+          return `  ${i + 1}. ${s.text}${flag}`;
+        }).join('\n') + '\n';
+    }
+  }
+
+  const completedCount = state.steps.filter(s => s.status === 'done').length;
+  const skippedCount   = state.steps.filter(s => s.status === 'skipped').length;
+
+  const ticket =
+`TROUBLESHOOTING SESSION
 ──────────────────────────────────
 Date:       ${dateStr} ${timeStr}
 Duration:   ${fmtTime(state.timerSeconds)}
 Technology: ${state.tech}
 Device:     ${modelName}
 Issue:      ${state.issue}
+Outcome:    ${outcome}
 ──────────────────────────────────
 
-COMPLETED STEPS (${done.length}):
-${lines(done, false)}
-
-${skipped.length ? `SKIPPED STEPS (${skipped.length}):\n${lines(skipped, false)}\n\n` : ''}REMAINING STEPS (${remaining.length}):
-${lines(remaining, true)}
-
+STEPS LOG (${completedCount} completed, ${skippedCount} skipped):
+${stepLog || '  No steps completed\n'}${remainingLog}
 ──────────────────────────────────
 Generated by Tracely`;
 
