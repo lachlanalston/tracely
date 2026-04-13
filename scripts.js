@@ -64,7 +64,11 @@ const stepsData = {
       { text: "Confirm NTD has power – Power LED should be solid green", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
       { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"] },
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"],
+        exits: {
+          "Active outage confirmed in area": "NBN network outage confirmed in area – no further troubleshooting required until outage clears",
+          "Scheduled maintenance listed": "Scheduled NBN maintenance in progress – restoration expected per NBN schedule"
+        }},
       { text: "Check PON LED – solid green = synced, flashing = connecting, off = no fibre signal", disruptive: false,
         options: ["PON LED solid green – synced OK", "PON LED flashing – still connecting", "PON LED off – no fibre signal"] },
       { text: "Check LOS LED – if red, there is a fibre fault (cut, bend, dirty connector)", disruptive: false,
@@ -76,7 +80,10 @@ const stepsData = {
       { text: "Reboot router", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly connected then dropped"] },
       { text: "Test with laptop directly on UNI-D 1 port to bypass router", disruptive: false,
-        options: ["Laptop gets internet – router confirmed faulty", "Laptop gets IP but no internet – NTD/line issue", "Laptop no IP – NTD fault"] },
+        options: ["Laptop gets internet – router confirmed faulty", "Laptop gets IP but no internet – NTD/line issue", "Laptop no IP – NTD fault"],
+        exits: {
+          "Laptop gets internet – router confirmed faulty": "NBN service confirmed working. Router identified as fault – customer device replacement required"
+        }},
       { text: "Power cycle NTD – unplug 30 sec, allow ~2 min to reconnect", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved", "Power cycled – connecting but no internet"] },
       { text: "Raise fault with ISP – provide NTD serial number and LED status", disruptive: false, fields: F.fault },
@@ -87,7 +94,11 @@ const stepsData = {
       { text: "Confirm NTD has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance listed"] },
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance listed"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – packet loss attributed to active network outage",
+          "Scheduled maintenance listed": "Scheduled NBN maintenance in progress – packet loss expected until maintenance completes"
+        }},
       { text: "Check all Ethernet cabling – NTD to router, router to device", disruptive: false,
         options: ["All cables secure – OK", "Cable fault found and replaced", "Cables reseated – no change"] },
       { text: "Run continuous ping to 8.8.8.8 – note pattern and loss percentage", disruptive: false, fields: F.ping },
@@ -96,7 +107,10 @@ const stepsData = {
       { text: "Reboot router", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – briefly improved then dropped"] },
       { text: "Test with laptop directly on UNI-D port to isolate router", disruptive: false,
-        options: ["Laptop: same loss – not the router", "Laptop: no loss – router at fault", "Laptop: also losing packets – line/NTD issue"] },
+        options: ["Laptop: same loss – not the router", "Laptop: no loss – router at fault", "Laptop: also losing packets – line/NTD issue"],
+        exits: {
+          "Laptop: no loss – router at fault": "Packet loss isolated to router – NBN service functioning correctly. Customer router replacement required"
+        }},
       { text: "Raise fault with ISP – provide ping test results", disruptive: false, fields: F.fault },
       { text: "Escalate to NBN onsite – possible fibre degradation", disruptive: false,
         options: ["Onsite booked", "Escalation submitted"] }
@@ -105,18 +119,30 @@ const stepsData = {
       { text: "Confirm NTD has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed"] },
+        options: ["No outages listed", "Active outage confirmed"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – slow speeds attributed to active network outage"
+        }},
       { text: "Run speed test – record download, upload, and ping", disruptive: false, fields: F.speed },
       { text: "Test wired vs wireless – isolate whether issue is Wi-Fi", disruptive: false,
-        options: ["Wired OK, wireless slow – Wi-Fi issue confirmed", "Both wired and wireless slow – not Wi-Fi", "Wired not possible – wireless only tested"] },
+        options: ["Wired OK, wireless slow – Wi-Fi issue confirmed", "Both wired and wireless slow – not Wi-Fi", "Wired not possible – wireless only tested"],
+        exits: {
+          "Wired OK, wireless slow – Wi-Fi issue confirmed": "Issue isolated to Wi-Fi – NBN connection performing correctly. Wi-Fi configuration or hardware issue on customer equipment"
+        }},
       { text: "Check for background traffic (streaming, cloud backup, Windows updates)", disruptive: false,
         options: ["Background traffic found and paused – speeds improved", "No background traffic found", "Updates running – paused and retested"] },
       { text: "Reboot router", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Test with laptop directly on UNI-D port", disruptive: false,
-        options: ["Laptop speed OK – router confirmed faulty", "Laptop also slow – line/ISP issue"] },
+        options: ["Laptop speed OK – router confirmed faulty", "Laptop also slow – line/ISP issue"],
+        exits: {
+          "Laptop speed OK – router confirmed faulty": "NBN service performing correctly. Router confirmed as source of slow speeds – customer device replacement required"
+        }},
       { text: "Confirm service plan – check expected vs actual speeds", disruptive: false,
-        options: ["Plan speed – actual within acceptable range", "Plan speed vs actual speed mismatch confirmed"] },
+        options: ["Plan speed – actual within acceptable range", "Plan speed vs actual speed mismatch confirmed"],
+        exits: {
+          "Plan speed – actual within acceptable range": "Speeds confirmed within acceptable range for the service plan – no NBN fault present"
+        }},
       { text: "Raise fault with ISP – provide speed test results and test method", disruptive: false, fields: F.fault }
     ],
     "No Power": [
@@ -138,7 +164,11 @@ const stepsData = {
       { text: "Confirm NTD has power – Power LED should be on", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
       { text: "Check for known NBN outages at outages.nbnco.com.au", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"] },
+        options: ["No outages listed", "Active outage confirmed in area", "Scheduled maintenance listed"],
+        exits: {
+          "Active outage confirmed in area": "NBN network outage confirmed in area – no further troubleshooting required until outage clears",
+          "Scheduled maintenance listed": "Scheduled NBN maintenance in progress – restoration expected per NBN schedule"
+        }},
       { text: "Check DS (Downstream) LED – should be solid, not flashing", disruptive: false,
         options: ["DS LED solid – OK", "DS LED flashing – acquiring downstream", "DS LED off – no downstream signal"] },
       { text: "Check US (Upstream) LED – should be solid", disruptive: false,
@@ -154,7 +184,10 @@ const stepsData = {
       { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved", "Power cycled – DS/US LEDs recovered, still no internet"] },
       { text: "Request loopback test from ISP", disruptive: true,
-        options: ["Loopback test passed – fault not confirmed at ISP end", "Loopback test failed – ISP confirmed fault"] },
+        options: ["Loopback test passed – fault not confirmed at ISP end", "Loopback test failed – ISP confirmed fault"],
+        exits: {
+          "Loopback test failed – ISP confirmed fault": "ISP confirmed network-side fault via loopback test – fault lodged, awaiting ISP remediation"
+        }},
       { text: "Request port reset from ISP / NBN", disruptive: true,
         options: ["Port reset performed – no change", "Port reset performed – resolved"] },
       { text: "Raise fault with ISP – provide LED status and NTD serial", disruptive: false, fields: F.fault },
@@ -165,7 +198,11 @@ const stepsData = {
       { text: "Confirm NTD has power", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – packet loss attributed to active network outage",
+          "Scheduled maintenance": "Scheduled NBN maintenance in progress – packet loss expected until maintenance completes"
+        }},
       { text: "Inspect coaxial cable for damage, kinks, or corrosion", disruptive: false,
         options: ["Coax cable OK – no visible damage", "Kink or damage found – cable replaced", "Corrosion found at connector – cleaned/replaced"] },
       { text: "Check DS/US LEDs – intermittent flashing indicates signal instability", disruptive: false,
@@ -185,10 +222,16 @@ const stepsData = {
       { text: "Confirm NTD has power", disruptive: false,
         options: ["Power LED on – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed"] },
+        options: ["No outages listed", "Active outage confirmed"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – slow speeds attributed to active network outage"
+        }},
       { text: "Run speed test – record download, upload, and ping", disruptive: false, fields: F.speed },
       { text: "Test wired vs wireless to isolate the issue", disruptive: false,
-        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
+        options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"],
+        exits: {
+          "Wired OK, wireless slow – Wi-Fi issue": "Issue isolated to Wi-Fi – NBN connection performing correctly. Wi-Fi configuration or hardware issue on customer equipment"
+        }},
       { text: "Check for background traffic", disruptive: false,
         options: ["Background traffic found and stopped – improved", "No background traffic found"] },
       { text: "Check coaxial cable and connectors for damage", disruptive: false,
@@ -216,7 +259,11 @@ const stepsData = {
       { text: "Confirm modem has power – Power LED should be solid green", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power", "Power LED amber/red – fault"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"] },
+        options: ["No outages listed", "Active outage confirmed", "Scheduled maintenance"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – no further troubleshooting required until outage clears",
+          "Scheduled maintenance": "Scheduled NBN maintenance in progress – restoration expected per NBN schedule"
+        }},
       { text: "Check DSL LED – solid = synced, flashing = training, off = no signal", disruptive: false,
         options: ["DSL LED solid green – synced OK", "DSL LED flashing – training/not yet synced", "DSL LED off – no DSL signal"] },
       { text: "Check phone line / wall socket is active", disruptive: false,
@@ -228,7 +275,10 @@ const stepsData = {
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved", "Rebooted – DSL synced but still no internet"] },
       { text: "Test at the master socket / test socket (remove wall plate faceplate) to rule out internal wiring", disruptive: false,
-        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"] },
+        options: ["Master socket test – same result, not internal wiring", "Master socket test – works, internal wiring fault confirmed"],
+        exits: {
+          "Master socket test – works, internal wiring fault confirmed": "Internal property wiring fault confirmed – NBN infrastructure OK. Onsite investigation of internal cabling required"
+        }},
       { text: "Raise fault with ISP – provide DSL sync speed and attenuation", disruptive: false, fields: F.fault },
       { text: "Escalate to onsite", disruptive: false,
         options: ["Onsite booked", "Escalation submitted"] }
@@ -237,7 +287,10 @@ const stepsData = {
       { text: "Confirm modem has power", disruptive: false,
         options: ["Power LED solid green – OK", "Power LED off – no power"] },
       { text: "Check for known NBN outages", disruptive: false,
-        options: ["No outages listed", "Active outage confirmed"] },
+        options: ["No outages listed", "Active outage confirmed"],
+        exits: {
+          "Active outage confirmed": "NBN network outage confirmed – packet loss attributed to active network outage"
+        }},
       { text: "Check DSL sync rate in modem admin (192.168.0.1 or 192.168.1.1)", disruptive: false, fields: F.dslSync },
       { text: "Inspect phone cabling condition – damaged wire causes DSL instability", disruptive: false,
         options: ["Cabling OK – no visible damage", "Damaged/frayed cable found – replaced"] },
@@ -713,6 +766,7 @@ const state = {
   faultStartTime:    '',
   clientName:        '',
   siteName:          '',
+  conclusion:        '',
 };
 
 // ================================================================
@@ -861,7 +915,7 @@ function resetSession() {
     modelIndex: 0, imageTab: 0, timerSeconds: 0,
     pendingStepIndex: null, pendingResolution: false, resolved: false, resolvedAtStep: null,
     sessionStartTime: null, faultStartTime: '',
-    clientName: '', siteName: '',
+    clientName: '', siteName: '', conclusion: '',
   });
 
   document.getElementById('resetBtn').hidden = true;
@@ -933,7 +987,7 @@ function renderSteps() {
     top.appendChild(body);
     card.appendChild(top);
 
-    if (step.status === 'active' && !state.resolved) {
+    if (step.status === 'active' && !state.resolved && !state.conclusion) {
       // ── Result capture ──
       const resultArea = document.createElement('div');
       resultArea.className = 'step-result-area';
@@ -1141,9 +1195,25 @@ function completeStep(index) {
 
 function doCompleteStep(index) {
   state.steps[index].status = 'done';
+  const step = state.steps[index];
+  if (step.exits && step.result && step.exits[step.result]) {
+    endWithConclusion(step.exits[step.result]);
+    return;
+  }
   activateNext(index);
   renderSteps();
   updateProgress();
+}
+
+function endWithConclusion(conclusion) {
+  state.conclusion = conclusion;
+  state.steps.forEach(s => {
+    if (s.status === 'pending' || s.status === 'active') s.status = 'skipped';
+  });
+  stopTimer();
+  renderSteps();
+  updateProgress();
+  generateTicket();
 }
 
 // Called from the "Issue Fixed" button on the active step card
@@ -1189,25 +1259,32 @@ function renderResolvedBanner() {
   const existing = document.getElementById('resolvedBanner');
   if (existing) existing.remove();
 
-  if (!state.resolved) return;
+  if (!state.resolved && !state.conclusion) return;
 
   const banner = document.createElement('div');
   banner.id = 'resolvedBanner';
-  banner.className = 'resolved-banner';
 
   const iconEl = document.createElement('div');
   iconEl.className = 'resolved-banner-icon';
-  iconEl.textContent = '✓';
 
   const content = document.createElement('div');
   content.className = 'resolved-banner-content';
 
   const title = document.createElement('strong');
-  title.textContent = 'Issue Resolved';
-
   const detail = document.createElement('span');
-  const resolvedStep = state.steps[state.resolvedAtStep];
-  detail.textContent = `Fixed at step ${state.resolvedAtStep + 1}: ${resolvedStep.text}`;
+
+  if (state.conclusion) {
+    banner.className = 'resolved-banner concluded';
+    iconEl.textContent = '!';
+    title.textContent = 'Root Cause Identified';
+    detail.textContent = state.conclusion;
+  } else {
+    banner.className = 'resolved-banner';
+    iconEl.textContent = '✓';
+    title.textContent = 'Issue Resolved';
+    const resolvedStep = state.steps[state.resolvedAtStep];
+    detail.textContent = `Fixed at step ${state.resolvedAtStep + 1}: ${resolvedStep.text}`;
+  }
 
   content.appendChild(title);
   content.appendChild(detail);
@@ -1395,9 +1472,26 @@ function generateTicket() {
   const dateStr   = now.toLocaleDateString('en-AU');
   const timeStr   = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
   const modelName = techInfo[state.tech] ? techInfo[state.tech][state.modelIndex].model : 'Unknown';
-  const outcome   = state.resolved
-    ? `Resolved – fixed at step ${state.resolvedAtStep + 1}`
-    : 'Unresolved – further action required';
+  let outcome;
+  if (state.conclusion) {
+    outcome = state.conclusion;
+  } else if (state.resolved) {
+    outcome = `Resolved – fixed at step ${state.resolvedAtStep + 1}`;
+  } else {
+    // Check if a fault/carrier fault step was completed with a specific outcome field
+    const faultStep = state.steps.find(s =>
+      s.status === 'done' && s.fields &&
+      s.fields.some(f => f.key === 'outcome') &&
+      s.fieldValues && s.fieldValues.outcome
+    );
+    if (faultStep) {
+      const ref = faultStep.fieldValues.ref ? ` – Ref: ${faultStep.fieldValues.ref}` :
+                  faultStep.fieldValues.imei ? ` – IMEI: ${faultStep.fieldValues.imei}` : '';
+      outcome = `${faultStep.fieldValues.outcome}${ref}`;
+    } else {
+      outcome = 'Unresolved – further action required';
+    }
+  }
 
   // Fault / session times
   let faultStartStr = '';
