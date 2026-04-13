@@ -200,8 +200,8 @@ const stepsData = {
         exits: {
           "Plan speed – actual within acceptable range": "Speeds confirmed within acceptable range for the service plan – no NBN fault present"
         }},
-      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and retest – confirms if line quality is the limiting factor", disruptive: true,
-        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and retest – confirms if line quality is the limiting factor", disruptive: true, condition: 'plan500plus',
+        options: ["Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -328,8 +328,8 @@ const stepsData = {
         options: ["Rebooted – no change", "Rebooted – resolved"] },
       { text: "Power cycle NTD", disruptive: true,
         options: ["Power cycled – no change", "Power cycled – resolved"] },
-      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and retest – HFC line quality can limit performance at higher speeds", disruptive: true,
-        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and retest – HFC line quality can limit performance at higher speeds", disruptive: true, condition: 'plan500plus',
+        options: ["Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -368,8 +368,8 @@ const stepsData = {
       { text: "Power cycle NTD – unplug 30 sec, allow ~5 min to reconnect", disruptive: true,
         options: ["Power cycled – stable since", "Power cycled – briefly stable then dropped again", "Power cycled – no change"] },
       { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
-      { text: "If on a high-speed plan (250 Mbps+), temporarily shape/limit the connection speed and monitor stability – HFC lines can drop sessions under load at higher speeds", disruptive: true,
-        options: ["Not applicable – plan speed is below 250 Mbps", "Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and monitor stability – HFC lines can drop sessions under load at higher speeds", disruptive: true, condition: 'plan500plus',
+        options: ["Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – dropouts resolved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection stable at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -444,8 +444,8 @@ const stepsData = {
         options: ["No interference sources found", "Interfering device found and removed – improved"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "If on a high-speed plan (100 Mbps+), temporarily shape/limit the connection speed and retest – line length and quality limits achievable sync rate on FTTN/FTTB", disruptive: true,
-        options: ["Not applicable – plan speed is already at line's expected maximum", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and retest – line length and quality limits achievable sync rate on FTTN/FTTB", disruptive: true, condition: 'plan100plus',
+        options: ["Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -479,8 +479,8 @@ const stepsData = {
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – stable since reboot", "Rebooted – dropped again shortly after", "Rebooted – no change"] },
       { text: "Run continuous ping to 8.8.8.8 – capture loss pattern during or after dropout", disruptive: false, fields: F.ping },
-      { text: "If on a high-speed plan (100 Mbps+), temporarily shape/limit the connection speed and monitor stability – DSL lines can retrain or drop sessions when pushed beyond line quality limits", disruptive: true,
-        options: ["Not applicable – plan speed is already at line's expected maximum", "Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and monitor stability – DSL lines can retrain or drop sessions when pushed beyond line quality limits", disruptive: true, condition: 'plan100plus',
+        options: ["Speed shaped down – dropouts continue", "Speed shaped down – dropouts resolved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – dropouts resolved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection stable at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -615,8 +615,8 @@ const stepsData = {
         options: ["Wired OK, wireless slow – Wi-Fi issue", "Both slow – not Wi-Fi related"] },
       { text: "Reboot modem", disruptive: true,
         options: ["Rebooted – no change", "Rebooted – resolved"] },
-      { text: "If speeds are lower than expected for the plan, temporarily shape/limit the connection speed and retest – confirms if line quality is the ceiling", disruptive: true,
-        options: ["Not applicable – speeds are at expected line maximum", "Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
+      { text: "Temporarily shape/limit the connection speed and retest – confirms if line quality is the ceiling", disruptive: true, condition: 'plan50plus',
+        options: ["Speed shaped down – no improvement", "Speed shaped down – significantly improved – line quality is limiting factor"],
         exits: {
           "Speed shaped down – significantly improved – line quality is limiting factor": "Line quality confirmed as limiting factor at plan speed. Connection improved at reduced speed – ISP line investigation or plan downgrade recommended"
         }},
@@ -1151,11 +1151,21 @@ function startSession() {
   const raw = (stepsData[state.tech] && stepsData[state.tech][state.issue]) || [];
   state.steps = raw.map((s, i) => ({
     ...s,
-    status:          i === 0 ? 'active' : 'pending',
+    status:          'pending',
     result:          '',
     fieldValues:     {},
     resolvedChecked: false
   }));
+  // Activate first applicable step; skip conditioned steps that don't qualify yet
+  let firstActivated = false;
+  state.steps.forEach(s => {
+    if (!meetsCondition(s)) {
+      s.status = 'skipped';
+    } else if (!firstActivated) {
+      s.status = 'active';
+      firstActivated = true;
+    }
+  });
   state.resolved        = false;
   state.resolvedAtStep  = null;
   state.conclusion      = '';
@@ -1225,6 +1235,8 @@ function renderSteps() {
   list.innerHTML = '';
 
   state.steps.forEach((step, i) => {
+    // Hide steps that don't meet their condition and haven't been completed
+    if (!meetsCondition(step) && step.status !== 'done') return;
     const isCancelled = state.resolved && step.status === 'pending';
     const card = document.createElement('div');
     card.className = `step-card ${isCancelled ? 'cancelled' : step.status}`;
@@ -1568,18 +1580,35 @@ function renderResolvedBanner() {
   sessionView.insertBefore(banner, sessionView.firstChild);
 }
 
+function meetsCondition(step) {
+  if (!step.condition) return true;
+  if (!state.planSpeed) return false;
+  const dl = parseInt(state.planSpeed);
+  if (isNaN(dl)) return false;
+  if (step.condition === 'plan500plus') return dl >= 500;
+  if (step.condition === 'plan100plus') return dl >= 100;
+  if (step.condition === 'plan50plus')  return dl >= 50;
+  return true;
+}
+
 function activateNext(from) {
   for (let i = from + 1; i < state.steps.length; i++) {
-    if (state.steps[i].status === 'pending') {
-      state.steps[i].status = 'active';
+    const s = state.steps[i];
+    if (s.status === 'pending') {
+      if (!meetsCondition(s)) {
+        s.status = 'skipped';
+        continue;
+      }
+      s.status = 'active';
       return;
     }
   }
 }
 
 function updateProgress() {
-  const total = state.steps.length;
-  const done  = state.steps.filter(s => s.status === 'done').length;
+  const applicable = state.steps.filter(s => meetsCondition(s));
+  const total = applicable.length;
+  const done  = applicable.filter(s => s.status === 'done').length;
   const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('progressText').textContent = `${done} / ${total} complete`;
@@ -1838,9 +1867,12 @@ function generateTicket() {
 
   // Build the chronological steps log with results inline
   let stepLog = '';
+  let logNum = 0;
   state.steps.forEach((s, i) => {
+    if (!meetsCondition(s) && s.status !== 'done') return; // skip conditioned-out steps
     if (s.status === 'pending' && state.resolved) return; // skip cancelled steps
-    const num    = String(i + 1).padStart(2, ' ');
+    logNum++;
+    const num    = String(logNum).padStart(2, ' ');
     const flag   = s.disruptive ? ' [DISRUPTIVE]' : '';
     const marker = s.status === 'done' ? '✓' : s.status === 'skipped' ? '–' : '○';
     stepLog += `  ${num}. ${marker} ${s.text}${flag}\n`;
@@ -1855,7 +1887,9 @@ function generateTicket() {
   // Remaining steps (only when session not resolved)
   let remainingLog = '';
   if (!state.resolved) {
-    const remaining = state.steps.filter(s => s.status === 'pending' || s.status === 'active');
+    const remaining = state.steps.filter(s =>
+      meetsCondition(s) && (s.status === 'pending' || s.status === 'active')
+    );
     if (remaining.length) {
       remainingLog = `\nREMAINING STEPS:\n` +
         remaining.map((s, i) => {
@@ -1866,7 +1900,7 @@ function generateTicket() {
   }
 
   const completedCount = state.steps.filter(s => s.status === 'done').length;
-  const skippedCount   = state.steps.filter(s => s.status === 'skipped').length;
+  const skippedCount   = state.steps.filter(s => s.status === 'skipped' && meetsCondition(s)).length;
 
   const faultLine   = faultStartStr   ? `\nFault started: ${faultStartStr}` : '';
   const sessionLine = `\nTroubleshooting started: ${sessionStartStr}`;
@@ -1907,8 +1941,34 @@ function bindButtons() {
   document.getElementById('siteNameInput').addEventListener('input', e => {
     state.siteName = e.target.value.trim();
   });
-  document.getElementById('planSpeedInput').addEventListener('input', e => {
-    state.planSpeed = e.target.value.trim();
+  document.getElementById('planSpeedInput').addEventListener('change', e => {
+    state.planSpeed = e.target.value;
+    if (state.steps.length) {
+      // Re-evaluate conditions: un-skip pending conditioned steps that now qualify,
+      // and skip active/pending steps that no longer qualify
+      state.steps.forEach((s, i) => {
+        if (!s.condition) return;
+        if (meetsCondition(s)) {
+          // Step now qualifies — restore it if it was skipped due to condition
+          if (s.status === 'skipped' && !state.resolved && !state.conclusion) {
+            s.status = 'pending';
+          }
+        } else {
+          // Step no longer qualifies — skip it if it hasn't been done
+          if (s.status === 'pending' || s.status === 'active') {
+            s.status = 'skipped';
+          }
+        }
+      });
+      // Ensure there is exactly one active step (the next applicable pending one)
+      const hasActive = state.steps.some(s => s.status === 'active');
+      if (!hasActive && !state.resolved && !state.conclusion) {
+        const lastDone = state.steps.reduce((acc, s, i) => s.status === 'done' ? i : acc, -1);
+        activateNext(lastDone);
+      }
+      renderSteps();
+      updateProgress();
+    }
   });
 
   // Fault start time input

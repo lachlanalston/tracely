@@ -494,6 +494,7 @@ button { font-family: inherit; }
   cursor: pointer;
 }
 .fault-detail-input:focus { border-color: var(--accent); }
+select.fault-detail-input { appearance: auto; }
 /* Style the calendar picker icon on dark bg */
 .fault-detail-input::-webkit-calendar-picker-indicator {
   filter: invert(0.6);
