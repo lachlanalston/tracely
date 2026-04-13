@@ -1081,9 +1081,7 @@ function renderTechGrid() {
 function renderIssueGrid() {
   const grid = document.getElementById('issueGrid');
   grid.innerHTML = '';
-  const issues = state.tech && stepsData[state.tech]
-    ? Object.keys(stepsData[state.tech])
-    : ["No Internet", "Packet Loss", "Slow Internet", "No Power"];
+  const issues = Object.keys(stepsData[state.tech] || stepsData[TECH_TYPES[0]]);
   issues.forEach(issue => {
     const btn = document.createElement('button');
     btn.className = 'filter-item' + (state.issue === issue ? ' selected' : '');
