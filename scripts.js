@@ -2314,9 +2314,10 @@ function initPortModal() {
 
   // Copy port on click
   document.getElementById('portModalBody').addEventListener('click', e => {
-    const cell = e.target.closest('.port-num-copy');
+    const cell = e.target.closest('.port-num-copy, .port-proto-copy');
     if (!cell) return;
-    navigator.clipboard.writeText(cell.dataset.port).then(() => {
+    const value = cell.dataset.port ?? cell.dataset.proto;
+    navigator.clipboard.writeText(value).then(() => {
       const orig = cell.textContent;
       cell.textContent = 'Copied!';
       cell.classList.add('port-num-copied');
@@ -2371,7 +2372,7 @@ function renderPortSections() {
 
     const thead = document.createElement('thead');
     thead.innerHTML = `<tr>
-      <th>Port</th><th>Proto</th><th>Direction</th><th>Purpose</th><th>Vendor note</th>
+      <th>Port</th><th>Protocol</th><th>Direction</th><th>Purpose</th><th>Vendor note</th>
     </tr>`;
     table.appendChild(thead);
 
@@ -2381,7 +2382,7 @@ function renderPortSections() {
       const dirClass = row.dir === 'Inbound' ? 'dir-in' : row.dir === 'Outbound' ? 'dir-out' : 'dir-both';
       tr.innerHTML = `
         <td class="port-num port-num-copy" title="Click to copy" data-port="${row.port}">${row.port}</td>
-        <td class="port-proto">${row.proto}</td>
+        <td class="port-proto port-proto-copy" title="Click to copy" data-proto="${row.proto}">${row.proto}</td>
         <td><span class="port-dir ${dirClass}">${row.dir}</span></td>
         <td class="port-purpose">${row.purpose}</td>
         <td class="port-note">${row.note}</td>

@@ -1488,11 +1488,13 @@ body.light .fault-detail-input::-webkit-calendar-picker-indicator { filter: none
   white-space: nowrap;
   font-weight: 500;
 }
-.port-num-copy {
+.port-num-copy,
+.port-proto-copy {
   cursor: pointer;
   user-select: none;
 }
 .port-num-copy:hover { color: var(--accent-hover); text-decoration: underline; }
+.port-proto-copy:hover { color: var(--text); text-decoration: underline; }
 .port-num-copied { color: var(--success) !important; text-decoration: none !important; }
 
 .port-proto {
