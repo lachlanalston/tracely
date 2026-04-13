@@ -80,14 +80,107 @@ const stepsOutageRisk = {
   "Restart Router": "Will Disrupt Connection ⚠️"
 };
 
-// HFC only images/models for now
+// NBN hardware database – add image files to images/<tech>/ as they become available
 const techInfo = {
+  "FTTP": [
+    {
+      model: "Nokia G-010G-P",
+      images: [
+        { src: "images/fttp/nokia-g010gp-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/fttp/nokia-g010gp-back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Nokia G-010G-Q",
+      images: [
+        { src: "images/fttp/nokia-g010gq-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/fttp/nokia-g010gq-back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Sercomm NF8 ONT",
+      images: [
+        { src: "images/fttp/sercomm-nf8-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/fttp/sercomm-nf8-back.jpg",  caption: "Back view – check ports" }
+      ]
+    }
+  ],
   "HFC": [
-    { 
+    {
       model: "Arris CM8200",
       images: [
         { src: "images/Older HFC NTD - Arris CM8200_Front.png", caption: "Front view – check lights" },
-        { src: "images/Older HFC NTD - Arris CM8200_Back.jpg", caption: "Back view – check ports" }
+        { src: "images/Older HFC NTD - Arris CM8200_Back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Technicolor TC4400",
+      images: [
+        { src: "images/hfc/technicolor-tc4400-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/hfc/technicolor-tc4400-back.jpg",  caption: "Back view – check ports" }
+      ]
+    }
+  ],
+  "FTTN/FTTB": [
+    {
+      model: "Sagemcom F@ST 3864OP",
+      images: [
+        { src: "images/fttn/sagemcom-3864op-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/fttn/sagemcom-3864op-back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Netgear DM200",
+      images: [
+        { src: "images/fttn/netgear-dm200-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/fttn/netgear-dm200-back.jpg",  caption: "Back view – check ports" }
+      ]
+    }
+  ],
+  "LTE/4G": [
+    {
+      model: "Nokia FastMile 4G",
+      images: [
+        { src: "images/lte/nokia-fastmile-4g-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/lte/nokia-fastmile-4g-back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Wavesat LTE CPE",
+      images: [
+        { src: "images/lte/wavesat-lte-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/lte/wavesat-lte-back.jpg",  caption: "Back view – check ports" }
+      ]
+    }
+  ],
+  "ADSL/VDSL": [
+    {
+      model: "Sagemcom F@ST 3864V3",
+      images: [
+        { src: "images/adsl/sagemcom-3864v3-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/adsl/sagemcom-3864v3-back.jpg",  caption: "Back view – check ports" }
+      ]
+    },
+    {
+      model: "Netgear D7800",
+      images: [
+        { src: "images/adsl/netgear-d7800-front.jpg", caption: "Front view – check LEDs" },
+        { src: "images/adsl/netgear-d7800-back.jpg",  caption: "Back view – check ports" }
+      ]
+    }
+  ],
+  "Satellite": [
+    {
+      model: "ViaSat SurfBeam 2 (Indoor)",
+      images: [
+        { src: "images/satellite/viasat-surfbeam2-front.jpg", caption: "Indoor modem – front" },
+        { src: "images/satellite/viasat-surfbeam2-back.jpg",  caption: "Indoor modem – back" }
+      ]
+    },
+    {
+      model: "Sky Muster Dish",
+      images: [
+        { src: "images/satellite/skymuster-dish.jpg", caption: "Outdoor dish / antenna" }
       ]
     }
   ]
@@ -95,6 +188,39 @@ const techInfo = {
 
 // Lights table data
 const lightsData = {
+  "FTTP": {
+    "Nokia G-010G-P": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["Power","Off","No power – check supply"],
+      ["PON","Solid Green","Synchronised with NBN network"],
+      ["PON","Flashing Green","Connecting to network"],
+      ["PON","Off","No PON signal – check fibre"],
+      ["LOS","Solid Red","Loss of signal – fibre fault or cut"],
+      ["LOS","Off","Normal – no fault"],
+      ["LAN1","Solid/Flashing Green","Ethernet link / activity"],
+      ["LAN1","Off","No Ethernet connection"]
+    ],
+    "Nokia G-010G-Q": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["Power","Off","No power – check supply"],
+      ["PON","Solid Green","Synchronised with NBN network"],
+      ["PON","Flashing Green","Connecting to network"],
+      ["LOS","Solid Red","Loss of signal – check fibre connection"],
+      ["LOS","Off","Normal"],
+      ["LAN","Solid/Flashing Green","Ethernet link / activity"]
+    ],
+    "Sercomm NF8 ONT": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["PON","Solid Green","Fibre link established"],
+      ["PON","Flashing","Registering with network"],
+      ["Internet","Solid Green","Internet active"],
+      ["Internet","Off","No internet connection"],
+      ["LAN","Solid/Flashing Green","Ethernet activity"]
+    ]
+  },
   "HFC": {
     "Arris CM8200": [
       ["Power","Downstream","Upstream","Online","Meaning"],
@@ -102,8 +228,107 @@ const lightsData = {
       ["On","Flashing","Flashing","Flashing","Power-on self test"],
       ["On","Flashing","Off","Off","Downstream search"],
       ["On","On","Flashing","Off","Downstream found, upstream search"],
-      ["On","On","On","Flashing","Downstream and upstream found - retrieving setup information from NBN"],
+      ["On","On","On","Flashing","Retrieving setup information from NBN"],
       ["On","On","On","On","Ready for service"]
+    ],
+    "Technicolor TC4400": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid White","Device powered on"],
+      ["Power","Off","No power – check supply"],
+      ["DS","Solid White","Downstream channel locked"],
+      ["DS","Flashing","Scanning for downstream"],
+      ["US","Solid White","Upstream channel locked"],
+      ["US","Flashing","Ranging / upstream registration"],
+      ["Online","Solid White","Registered and connected"],
+      ["Online","Flashing","Connecting to NBN"],
+      ["Online","Off","Not connected"]
+    ]
+  },
+  "FTTN/FTTB": {
+    "Sagemcom F@ST 3864OP": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["DSL","Solid Green","VDSL sync established"],
+      ["DSL","Flashing Green","Training / syncing"],
+      ["DSL","Off","No DSL signal – check line"],
+      ["Internet","Solid Green","Internet connection active"],
+      ["Internet","Flashing Green","Internet traffic"],
+      ["Internet","Off","No internet – check DSL"],
+      ["WLAN","Solid/Flashing Green","Wi-Fi active / traffic"],
+      ["LAN1-4","Solid/Flashing Green","Ethernet link / activity"]
+    ],
+    "Netgear DM200": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["DSL","Solid Green","DSL sync established"],
+      ["DSL","Flashing Amber","Training"],
+      ["DSL","Off","No DSL signal"],
+      ["Internet","Solid Green","Internet active"],
+      ["Internet","Solid Amber","Connected – no internet"],
+      ["Internet","Off","Not connected"]
+    ]
+  },
+  "LTE/4G": {
+    "Nokia FastMile 4G": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["Signal","3 bars solid","Strong LTE signal"],
+      ["Signal","2 bars solid","Moderate signal"],
+      ["Signal","1 bar solid","Weak signal – check placement"],
+      ["Signal","Off","No signal"],
+      ["Internet","Solid Green","Internet active"],
+      ["Internet","Off","No internet connection"],
+      ["LAN","Solid/Flashing Green","Ethernet link / activity"]
+    ],
+    "Wavesat LTE CPE": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["LTE","Solid Green","LTE connected"],
+      ["LTE","Flashing","Searching for signal"],
+      ["Internet","Solid Green","Internet active"],
+      ["LAN","Solid Green","Ethernet connected"]
+    ]
+  },
+  "ADSL/VDSL": {
+    "Sagemcom F@ST 3864V3": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["DSL","Solid Green","ADSL/VDSL sync established"],
+      ["DSL","Flashing Green","Training / syncing"],
+      ["DSL","Off","No DSL signal – check line"],
+      ["Internet","Solid Green","Internet connection active"],
+      ["Internet","Off","No internet"],
+      ["WLAN","Solid/Flashing Green","Wi-Fi active"],
+      ["LAN","Solid/Flashing Green","Ethernet link / activity"]
+    ],
+    "Netgear D7800": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid White","Device powered on"],
+      ["DSL","Solid Green","DSL sync established"],
+      ["DSL","Flashing Amber","Training"],
+      ["Internet","Solid White","Internet active"],
+      ["Internet","Solid Amber","No internet – DSL present"],
+      ["2.4GHz","Solid/Flashing White","Wi-Fi active"],
+      ["5GHz","Solid/Flashing White","Wi-Fi active"]
+    ]
+  },
+  "Satellite": {
+    "ViaSat SurfBeam 2 (Indoor)": [
+      ["LED","Status","Meaning"],
+      ["Power","Solid Green","Device powered on"],
+      ["Satellite","Solid Green","Satellite link established"],
+      ["Satellite","Flashing Green","Acquiring satellite signal"],
+      ["Satellite","Off","No satellite signal – check dish alignment"],
+      ["Internet","Solid Green","Internet active"],
+      ["Internet","Off","No internet connection"],
+      ["LAN","Solid/Flashing Green","Ethernet activity"]
+    ],
+    "Sky Muster Dish": [
+      ["Indicator","Status","Meaning"],
+      ["Alignment","Correct","Dish pointed to Sky Muster satellite at 140.0°E"],
+      ["Alignment","Off-axis","Re-align dish – call installer if needed"],
+      ["Cable","Intact","Coax from dish to indoor modem connected"],
+      ["Cable","Damaged","Replace coax – check connectors"]
     ]
   }
 };
@@ -211,13 +436,37 @@ function updateImage(tech){
   if(techInfo[tech] && techInfo[tech].length>0){
     const modelData = techInfo[tech][currentModelIndex];
 
+    // Model counter badge
+    if(techInfo[tech].length > 1){
+      const counter = document.createElement("div");
+      counter.className = "model-counter";
+      counter.textContent = `Model ${currentModelIndex + 1} of ${techInfo[tech].length}`;
+      container.appendChild(counter);
+    }
+
     modelData.images.forEach(imgData=>{
       const imgWrapper = document.createElement("div");
       imgWrapper.className = "img-wrapper";
 
       const img = document.createElement("img");
       img.src = imgData.src;
-      img.alt = modelData.model;
+      img.alt = `${modelData.model} – ${imgData.caption}`;
+
+      // Graceful fallback when photo not yet uploaded
+      img.onerror = () => {
+        imgWrapper.removeChild(img);
+        const placeholder = document.createElement("div");
+        placeholder.className = "img-placeholder";
+        placeholder.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span>Photo needed</span>
+          <small>${imgData.caption}</small>`;
+        imgWrapper.insertBefore(placeholder, imgWrapper.firstChild);
+      };
 
       img.addEventListener("click", () => {
         openLightbox(imgData.src, `${modelData.model} – ${imgData.caption}`);
@@ -231,23 +480,6 @@ function updateImage(tech){
       imgWrapper.appendChild(caption);
       container.appendChild(imgWrapper);
     });
-  } else {
-    const imgWrapper = document.createElement("div");
-    imgWrapper.className = "img-wrapper";
-
-    const img = document.createElement("img");
-    img.src = "images/default.png";
-    img.addEventListener("click", () => {
-      openLightbox("images/default.png", "Equipment image will appear here.");
-    });
-
-    const caption = document.createElement("div");
-    caption.className="caption";
-    caption.textContent = "Equipment image will appear here.";
-
-    imgWrapper.appendChild(img);
-    imgWrapper.appendChild(caption);
-    container.appendChild(imgWrapper);
   }
 
   updateLightsTable(tech);
