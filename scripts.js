@@ -2312,6 +2312,21 @@ function initPortModal() {
     if (e.target === document.getElementById('portModalBackdrop')) hide('portModalBackdrop');
   });
 
+  // Copy port on click
+  document.getElementById('portModalBody').addEventListener('click', e => {
+    const cell = e.target.closest('.port-num-copy');
+    if (!cell) return;
+    navigator.clipboard.writeText(cell.dataset.port).then(() => {
+      const orig = cell.textContent;
+      cell.textContent = 'Copied!';
+      cell.classList.add('port-num-copied');
+      setTimeout(() => {
+        cell.textContent = orig;
+        cell.classList.remove('port-num-copied');
+      }, 1200);
+    });
+  });
+
   // Header button
   document.getElementById('portGuideBtn').addEventListener('click', () => {
     renderPortSections();
@@ -2365,7 +2380,7 @@ function renderPortSections() {
       const tr = document.createElement('tr');
       const dirClass = row.dir === 'Inbound' ? 'dir-in' : row.dir === 'Outbound' ? 'dir-out' : 'dir-both';
       tr.innerHTML = `
-        <td class="port-num">${row.port}</td>
+        <td class="port-num port-num-copy" title="Click to copy" data-port="${row.port}">${row.port}</td>
         <td class="port-proto">${row.proto}</td>
         <td><span class="port-dir ${dirClass}">${row.dir}</span></td>
         <td class="port-purpose">${row.purpose}</td>
