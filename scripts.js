@@ -630,6 +630,8 @@ function resetSession() {
   show('emptyState');
   hide('equipmentView');
   show('equipmentEmpty');
+  hide('sessionActionsConfirm');
+  show('sessionActionsNormal');
 
   renderTechGrid();
   renderIssueGrid();
@@ -734,36 +736,10 @@ function renderSteps() {
       }
 
       if (state.resolvedAtStep === i) {
-        // This step resolved the issue
         const tag = document.createElement('div');
         tag.className = 'step-resolved-tag';
         tag.textContent = '✓ Issue resolved here';
         card.appendChild(tag);
-
-      } else if (!step.resolvedChecked) {
-        // ── "Did this fix it?" prompt ──
-        const prompt = document.createElement('div');
-        prompt.className = 'resolved-prompt';
-
-        const lbl = document.createElement('span');
-        lbl.className = 'resolved-prompt-label';
-        lbl.textContent = 'Did this resolve the issue?';
-
-        const yesBtn = document.createElement('button');
-        yesBtn.className = 'btn-resolved-yes';
-        yesBtn.textContent = 'Yes – Issue Fixed';
-        yesBtn.addEventListener('click', () => markSessionResolved(i));
-
-        const noBtn = document.createElement('button');
-        noBtn.className = 'btn-resolved-no';
-        noBtn.textContent = 'No – Continue';
-        noBtn.addEventListener('click', () => continueAfterStep(i));
-
-        prompt.appendChild(lbl);
-        prompt.appendChild(yesBtn);
-        prompt.appendChild(noBtn);
-        card.appendChild(prompt);
-
       } else {
         const lbl = document.createElement('div');
         lbl.className = 'step-status-label step-status-done';
@@ -810,22 +786,17 @@ function completeStep(index) {
 
 function doCompleteStep(index) {
   state.steps[index].status = 'done';
-  // Don't activate next yet — wait for the "Did this fix it?" answer
-  renderSteps();
-  updateProgress();
-}
-
-function continueAfterStep(index) {
-  state.steps[index].resolvedChecked = true;
   activateNext(index);
   renderSteps();
   updateProgress();
 }
 
-function markSessionResolved(index) {
-  state.steps[index].resolvedChecked = true;
+function markSessionResolved() {
+  // Use the last completed step as the resolution point
+  let lastDoneIdx = 0;
+  state.steps.forEach((s, i) => { if (s.status === 'done') lastDoneIdx = i; });
   state.resolved       = true;
-  state.resolvedAtStep = index;
+  state.resolvedAtStep = lastDoneIdx;
   stopTimer();
   renderSteps();
   updateProgress();
@@ -1126,6 +1097,21 @@ function bindButtons() {
     state.modelIndex = (state.modelIndex + 1) % len;
     state.imageTab = 0;
     renderEquipmentPanel();
+  });
+
+  // Issue resolved flow (two-step confirmation)
+  document.getElementById('markResolvedBtn').addEventListener('click', () => {
+    hide('sessionActionsNormal');
+    show('sessionActionsConfirm');
+  });
+  document.getElementById('cancelResolveBtn').addEventListener('click', () => {
+    hide('sessionActionsConfirm');
+    show('sessionActionsNormal');
+  });
+  document.getElementById('confirmResolveBtn').addEventListener('click', () => {
+    hide('sessionActionsConfirm');
+    show('sessionActionsNormal');
+    markSessionResolved();
   });
 
   // Ticket modal

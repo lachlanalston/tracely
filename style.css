@@ -631,7 +631,55 @@ button { font-family: inherit; }
 .session-actions {
   padding-top: 6px;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-actions-row {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Distinct from btn-primary — green outline, clearly a terminal action */
+.btn-mark-resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1.5px solid var(--success-border);
+  color: var(--success);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-mark-resolved:hover {
+  background: var(--success-muted);
+}
+
+/* Confirmation row — visually distinct from normal actions */
+.session-actions-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--success-muted);
+  border: 1.5px solid var(--success-border);
+  border-radius: var(--radius-lg);
+  animation: slideUp 0.15s ease;
+}
+
+.resolve-confirm-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--success);
+  flex: 1;
+  min-width: 180px;
 }
 
 /* ── Result input (active step) ── */
