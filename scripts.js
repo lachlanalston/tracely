@@ -521,6 +521,7 @@ const state = {
   timerSeconds:      0,
   timerInterval:     null,
   pendingStepIndex:  null,
+  pendingResolution: false,
   isDark:            true,
   resolved:          false,
   resolvedAtStep:    null,
@@ -621,7 +622,7 @@ function resetSession() {
   Object.assign(state, {
     tech: null, issue: null, steps: [],
     modelIndex: 0, imageTab: 0, timerSeconds: 0,
-    pendingStepIndex: null, resolved: false, resolvedAtStep: null,
+    pendingStepIndex: null, pendingResolution: false, resolved: false, resolvedAtStep: null,
   });
 
   document.getElementById('resetBtn').hidden = true;
@@ -630,9 +631,6 @@ function resetSession() {
   show('emptyState');
   hide('equipmentView');
   show('equipmentEmpty');
-  hide('sessionActionsConfirm');
-  show('sessionActionsNormal');
-
   renderTechGrid();
   renderIssueGrid();
 }
@@ -706,18 +704,33 @@ function renderSteps() {
       const actions = document.createElement('div');
       actions.className = 'step-actions';
 
+      // Primary: Mark Done → next step automatically, no prompts
       const doneBtn = document.createElement('button');
       doneBtn.className = 'btn-done';
       doneBtn.textContent = 'Mark Done';
       doneBtn.addEventListener('click', () => completeStep(i));
 
+      // Skip: move on without recording a result
       const skipBtn = document.createElement('button');
       skipBtn.className = 'btn-skip';
       skipBtn.textContent = 'Skip';
       skipBtn.addEventListener('click', () => skipStep(i));
 
+      // Divider
+      const divider = document.createElement('span');
+      divider.className = 'step-actions-divider';
+
+      // Issue Fixed: deliberate single-click — marks done AND ends session
+      const fixedBtn = document.createElement('button');
+      fixedBtn.className = 'btn-issue-fixed';
+      fixedBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Issue Fixed';
+      fixedBtn.title = 'Mark this step as done and close the session as resolved';
+      fixedBtn.addEventListener('click', () => completeAndResolve(i));
+
       actions.appendChild(doneBtn);
       actions.appendChild(skipBtn);
+      actions.appendChild(divider);
+      actions.appendChild(fixedBtn);
       card.appendChild(actions);
 
     } else if (step.status === 'done') {
@@ -791,12 +804,33 @@ function doCompleteStep(index) {
   updateProgress();
 }
 
-function markSessionResolved() {
-  // Use the last completed step as the resolution point
-  let lastDoneIdx = 0;
-  state.steps.forEach((s, i) => { if (s.status === 'done') lastDoneIdx = i; });
+// Called from the "Issue Fixed" button on the active step card
+function completeAndResolve(index) {
+  // Save textarea value first
+  const textarea = document.querySelector(`#step-${index} .result-input`);
+  if (textarea) state.steps[index].result = textarea.value.trim();
+
+  if (state.steps[index].disruptive) {
+    // Reuse disruptive confirm, but flag that we should resolve after
+    state.pendingStepIndex  = index;
+    state.pendingResolution = true;
+    document.getElementById('confirmModalText').textContent =
+      `"${state.steps[index].text}" will disrupt the client's connection. Proceed and mark the issue as resolved?`;
+    show('confirmModalBackdrop');
+    return;
+  }
+  state.steps[index].status = 'done';
+  markSessionResolved(index);
+}
+
+function markSessionResolved(resolvedIdx) {
+  // resolvedIdx = the step that fixed the issue; defaults to last completed step
+  if (resolvedIdx === undefined) {
+    resolvedIdx = 0;
+    state.steps.forEach((s, i) => { if (s.status === 'done') resolvedIdx = i; });
+  }
   state.resolved       = true;
-  state.resolvedAtStep = lastDoneIdx;
+  state.resolvedAtStep = resolvedIdx;
   stopTimer();
   renderSteps();
   updateProgress();
@@ -1099,21 +1133,6 @@ function bindButtons() {
     renderEquipmentPanel();
   });
 
-  // Issue resolved flow (two-step confirmation)
-  document.getElementById('markResolvedBtn').addEventListener('click', () => {
-    hide('sessionActionsNormal');
-    show('sessionActionsConfirm');
-  });
-  document.getElementById('cancelResolveBtn').addEventListener('click', () => {
-    hide('sessionActionsConfirm');
-    show('sessionActionsNormal');
-  });
-  document.getElementById('confirmResolveBtn').addEventListener('click', () => {
-    hide('sessionActionsConfirm');
-    show('sessionActionsNormal');
-    markSessionResolved();
-  });
-
   // Ticket modal
   document.getElementById('generateTicketBtn').addEventListener('click', generateTicket);
   document.getElementById('closeModalBtn').addEventListener('click', () => hide('ticketModalBackdrop'));
@@ -1129,16 +1148,24 @@ function bindButtons() {
     });
   });
 
-  // Confirm modal
+  // Confirm modal (disruptive step)
   document.getElementById('confirmCancelBtn').addEventListener('click', () => {
-    state.pendingStepIndex = null;
+    state.pendingStepIndex  = null;
+    state.pendingResolution = false;
     hide('confirmModalBackdrop');
   });
   document.getElementById('confirmProceedBtn').addEventListener('click', () => {
     hide('confirmModalBackdrop');
     if (state.pendingStepIndex !== null) {
-      doCompleteStep(state.pendingStepIndex);
+      const idx = state.pendingStepIndex;
       state.pendingStepIndex = null;
+      if (state.pendingResolution) {
+        state.pendingResolution = false;
+        state.steps[idx].status = 'done';
+        markSessionResolved(idx);
+      } else {
+        doCompleteStep(idx);
+      }
     }
   });
   document.getElementById('confirmModalBackdrop').addEventListener('click', e => {
