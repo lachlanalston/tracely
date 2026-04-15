@@ -1084,13 +1084,16 @@ function initResizeHandle() {
 }
 
 function init() {
-  renderTechGrid();
-  renderIssueGrid();
   setupMobileTabs();
   bindButtons();
   bindKeyboard();
   initResizeHandle();
   initPortModal();
+  // Auto-select the first tech and issue so content is visible on load
+  const defaultTech  = TECH_TYPES[0];
+  const defaultIssue = Object.keys(stepsData[defaultTech])[0];
+  selectTech(defaultTech);
+  selectIssue(defaultIssue);
 }
 
 // ================================================================
